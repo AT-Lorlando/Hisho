@@ -7,7 +7,7 @@ const env = dotenv.config()
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
+  modules: ['@nuxt/content', '@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
   app: {
     pageTransition: { name: 'page', mode: 'out-in' }
   },

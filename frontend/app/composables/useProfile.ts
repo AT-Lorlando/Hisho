@@ -5,7 +5,7 @@ export function useProfile() {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetch() {
+  async function loadProfile() {
     isLoading.value = true
     error.value = null
     try {
@@ -37,8 +37,17 @@ export function useProfile() {
   }
 
   async function compile() {
-    return $fetch('/api/v1/profile/compile', { method: 'POST' })
+    isLoading.value = true
+    error.value = null
+    try {
+      return await $fetch('/api/v1/profile/compile', { method: 'POST' })
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  return { profile, isLoading, error, fetch, update, compile }
+  return { profile, isLoading, error, loadProfile, update, compile }
 }

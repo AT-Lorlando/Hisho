@@ -22,6 +22,37 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ serializeAs: null })
   declare password: string
 
+  // Champs profil
+  @column()
+  declare title: string | null
+
+  @column()
+  declare bio: string | null
+
+  @column()
+  declare location: string | null
+
+  @column()
+  declare linkedinUrl: string | null
+
+  @column()
+  declare githubUrl: string | null
+
+  @column()
+  declare websiteUrl: string | null
+
+  @column()
+  declare phone: string | null
+
+  @column()
+  declare availability: string | null
+
+  @column()
+  declare dailyRate: string | null
+
+  @column.dateTime()
+  declare lastCompiledAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

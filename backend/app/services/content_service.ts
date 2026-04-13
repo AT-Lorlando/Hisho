@@ -32,6 +32,9 @@ export default class ContentService {
   }
 
   private filePath(type: ContentType, slug: string): string {
+    if (slug.includes('/') || slug.includes('..') || slug.includes('\0')) {
+      throw new Error(`Invalid slug: ${slug}`)
+    }
     return join(this.contentDir, type, `${slug}.md`)
   }
 
@@ -40,7 +43,11 @@ export default class ContentService {
   }
 
   read(type: ContentType, slug: string): { frontmatter: Record<string, unknown>; body: string } {
-    const raw = readFileSync(this.filePath(type, slug), 'utf-8')
+    const path = this.filePath(type, slug)
+    if (!existsSync(path)) {
+      throw new Error(`Content not found: ${type}/${slug}`)
+    }
+    const raw = readFileSync(path, 'utf-8')
     const { data, content } = matter(raw)
     return { frontmatter: data, body: content.trim() }
   }
@@ -57,6 +64,10 @@ export default class ContentService {
   }
 
   delete(type: ContentType, slug: string): void {
-    unlinkSync(this.filePath(type, slug))
+    const path = this.filePath(type, slug)
+    if (!existsSync(path)) {
+      throw new Error(`Content not found: ${type}/${slug}`)
+    }
+    unlinkSync(path)
   }
 }

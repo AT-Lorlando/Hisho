@@ -1,7 +1,6 @@
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import matter from 'gray-matter'
-import env from '#start/env'
 
 export const VALID_CONTENT_TYPES = ['experiences', 'skills', 'projects', 'certifications'] as const
 export type ContentType = (typeof VALID_CONTENT_TYPES)[number]
@@ -11,11 +10,9 @@ export function isValidContentType(type: string): type is ContentType {
 }
 
 export default class ContentService {
-  private contentDir: string
-
-  constructor() {
-    const configured = env.get('CONTENT_DIR')
-    this.contentDir = configured
+  private get contentDir(): string {
+    const configured = process.env.CONTENT_DIR
+    return configured
       ? resolve(process.cwd(), configured)
       : resolve(process.cwd(), '..', 'frontend', 'content')
   }

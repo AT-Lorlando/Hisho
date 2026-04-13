@@ -47,4 +47,12 @@ test.group('ContentService', (group) => {
   test('exists returns false for unknown file', ({ assert }) => {
     assert.isFalse(service.exists('experiences', 'nonexistent'))
   })
+
+  test('read throws on missing file', ({ assert }) => {
+    assert.throws(() => service.read('experiences', 'missing'), /Content not found/)
+  })
+
+  test('delete throws on missing file', ({ assert }) => {
+    assert.throws(() => service.delete('experiences', 'nonexistent-del'), /Content not found/)
+  })
 })

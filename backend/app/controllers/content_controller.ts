@@ -26,6 +26,10 @@ export default class ContentController {
       return response.badRequest({ message: `Invalid content type: ${params.type}` })
     }
 
+    if (!/^[a-z0-9-]+$/.test(params.slug)) {
+      return response.badRequest({ message: 'Invalid slug' })
+    }
+
     if (!contentService.exists(params.type, params.slug)) {
       return response.notFound({ message: `Fichier "${params.slug}" introuvable` })
     }
@@ -38,6 +42,10 @@ export default class ContentController {
   async destroy({ params, response }: HttpContext) {
     if (!isValidContentType(params.type)) {
       return response.badRequest({ message: `Invalid content type: ${params.type}` })
+    }
+
+    if (!/^[a-z0-9-]+$/.test(params.slug)) {
+      return response.badRequest({ message: 'Invalid slug' })
     }
 
     if (!contentService.exists(params.type, params.slug)) {

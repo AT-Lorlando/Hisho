@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from '
 import { join, resolve } from 'node:path'
 import matter from 'gray-matter'
 
-export const VALID_CONTENT_TYPES = ['experiences', 'skills', 'projects', 'certifications'] as const
+export const VALID_CONTENT_TYPES = ['experiences', 'skills', 'projects', 'certifications', 'domains'] as const
 export type ContentType = (typeof VALID_CONTENT_TYPES)[number]
 
 export function isValidContentType(type: string): type is ContentType {

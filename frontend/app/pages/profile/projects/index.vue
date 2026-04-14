@@ -27,8 +27,8 @@ async function handleDelete(slug: string) {
     <template #list-item="{ item, isActive }">
       <ContentListItem
         :title="item.title"
-        :meta="`${item.type} · ${item.status}`"
-        :tags="item.stack ?? []"
+        :meta="item.stack?.slice(0, 2).join(', ') ?? ''"
+        :tags="[]"
         :has-ai-summary="!!item.aiSummary"
         :is-active="isActive"
       />
@@ -38,11 +38,10 @@ async function handleDelete(slug: string) {
       <ContentPreview
         :title="item.title"
         :meta-items="[
-          { icon: 'lucide:tag', label: item.type },
-          { icon: 'lucide:activity', label: item.status },
-          ...(item.url ? [{ icon: 'lucide:link', label: 'Voir le projet' }] : []),
+          ...(item.startDate ? [{ icon: 'lucide:calendar', label: `${item.startDate}${item.endDate ? ` – ${item.endDate}` : ' – en cours'}` }] : []),
+          ...(item.url ? [{ icon: 'lucide:link', label: item.url }] : []),
         ]"
-        :tags="item.tags ?? []"
+        :tags="item.stack ?? []"
         :ai-summary="item.aiSummary"
         :body="item.body"
         :slug="item.slug"

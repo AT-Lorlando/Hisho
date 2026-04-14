@@ -28,7 +28,7 @@ async function handleDelete(slug: string) {
       <ContentListItem
         :title="item.title"
         :meta="`${item.client} · ${item.startDate}`"
-        :tags="item.stack ?? []"
+        :tags="[]"
         :has-ai-summary="!!item.aiSummary"
         :is-active="isActive"
       />
@@ -42,7 +42,7 @@ async function handleDelete(slug: string) {
           ...(item.location ? [{ icon: 'lucide:map-pin', label: item.location }] : []),
           { icon: 'lucide:user', label: item.role },
         ]"
-        :tags="item.tags ?? []"
+        :tags="[]"
         :ai-summary="item.aiSummary"
         :highlights="item.highlights"
         :body="item.body"

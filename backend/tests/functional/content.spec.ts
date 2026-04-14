@@ -57,6 +57,21 @@ test.group('ContentController', (group) => {
     response.assertStatus(400)
   })
 
+  test('POST /content/domains creates a domain file', async ({ client }) => {
+    const user = await createUser()
+    const response = await client
+      .post('/content/domains')
+      .loginAs(user)
+      .json({
+        title: 'Cybersécurité',
+        description: 'SOC, pentest, SIEM',
+        body: 'Domaine principal.',
+      })
+
+    response.assertStatus(201)
+    response.assertBodyContains({ slug: 'cybersecurite' })
+  })
+
   test('PUT /content/:type/:slug updates existing file', async ({ client }) => {
     const user = await createUser()
     await client

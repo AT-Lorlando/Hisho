@@ -6,6 +6,9 @@ const env = dotenv.config()
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
+  experimental: {
+    asyncContext: true,
+  },
   devtools: { enabled: true },
   modules: ['@nuxt/content', '@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
   app: {

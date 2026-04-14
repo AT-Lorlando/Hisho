@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Skill, SkillPayload } from '~/types/content'
+import type { Domain, Skill, SkillPayload } from '~/types/content'
 
 const props = defineProps<{ initial?: Skill | null }>()
 const emit = defineEmits<{ submit: [data: SkillPayload]; cancel: [] }>()
 
-const { items: domains } = useContent<any>('domains')
+const { items: domains } = useContent<Domain>('domains')
 
 const form = reactive<SkillPayload>({
   title: props.initial?.title ?? '',

@@ -1,16 +1,9 @@
-export interface Experience {
+export interface Domain {
   _path: string
   slug: string
   title: string
-  client: string
-  role: string
-  type: 'mission' | 'emploi' | 'freelance'
-  startDate: string
-  endDate?: string
-  location?: string
-  stack: string[]
-  tags: string[]
-  highlights: string[]
+  description?: string
+  order?: number
   aiSummary?: string
   body?: string
 }
@@ -19,12 +12,23 @@ export interface Skill {
   _path: string
   slug: string
   title: string
-  category: string
-  level: 'débutant' | 'intermédiaire' | 'avancé' | 'expert'
-  tags: string[]
+  domain: string
   yearsOfExperience?: number
-  lastUsed?: string
-  contexts?: string
+  aiSummary?: string
+  body?: string
+}
+
+export interface Experience {
+  _path: string
+  slug: string
+  title: string
+  client: string
+  role: string
+  startDate: string
+  endDate?: string
+  location?: string
+  stack: string[]
+  highlights: string[]
   aiSummary?: string
   body?: string
 }
@@ -33,14 +37,10 @@ export interface Project {
   _path: string
   slug: string
   title: string
-  type: 'personnel' | 'professionnel' | 'open-source'
-  status: 'en-cours' | 'terminé' | 'abandonné'
   startDate?: string
   endDate?: string
   stack: string[]
-  tags: string[]
   url?: string
-  demo?: string
   aiSummary?: string
   body?: string
 }
@@ -75,50 +75,48 @@ export interface UserProfile {
   lastCompiledAt: string | null
 }
 
-export type ContentType = 'experiences' | 'skills' | 'projects' | 'certifications'
+export type ContentType = 'experiences' | 'skills' | 'projects' | 'certifications' | 'domains'
 
 export interface ContentCounts {
   experiences: number
   skills: number
   projects: number
   certifications: number
+  domains: number
+}
+
+export interface DomainPayload {
+  title: string
+  description?: string
+  order?: number
+  body?: string
 }
 
 export interface ExperiencePayload {
   title: string
   client: string
   role: string
-  type: 'mission' | 'emploi' | 'freelance'
   startDate: string
   endDate?: string
   location?: string
   stack: string[]
-  tags: string[]
   highlights: string[]
   body?: string
 }
 
 export interface SkillPayload {
   title: string
-  category: string
-  level: 'débutant' | 'intermédiaire' | 'avancé' | 'expert'
-  tags: string[]
+  domain: string
   yearsOfExperience?: number
-  lastUsed?: string
-  contexts?: string
   body?: string
 }
 
 export interface ProjectPayload {
   title: string
-  type: 'personnel' | 'professionnel' | 'open-source'
-  status: 'en-cours' | 'terminé' | 'abandonné'
   startDate?: string
   endDate?: string
   stack: string[]
-  tags: string[]
   url?: string
-  demo?: string
   body?: string
 }
 

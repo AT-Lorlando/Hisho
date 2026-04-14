@@ -1,6 +1,6 @@
-import type { ContentType, Experience, Skill, Project, Certification } from '~/types/content'
+import type { ContentType, Domain, Experience, Skill, Project, Certification } from '~/types/content'
 
-type CollectionItem = Experience | Skill | Project | Certification
+type CollectionItem = Domain | Experience | Skill | Project | Certification
 
 export function useContent<T extends CollectionItem>(type: ContentType) {
   const { data: items, refresh } = useAsyncData<T[]>(

@@ -3,13 +3,21 @@ import type { ContentType, Domain, Experience, Skill, Project, Certification } f
 type CollectionItem = Domain | Experience | Skill | Project | Certification
 
 export function useContent<T extends CollectionItem>(type: ContentType) {
-  const { data: items, refresh } = useAsyncData<T[]>(
+  const { data: rawItems, refresh } = useAsyncData<T[]>(
     `content-${type}`,
     () => queryCollection(type as any).all() as Promise<T[]>,
     { default: () => [] }
   )
 
-  const count = computed(() => items.value?.length ?? 0)
+  // Derive slug from path if not present in frontmatter
+  const items = computed(() =>
+    (rawItems.value ?? []).map((item: any) => ({
+      ...item,
+      slug: item.slug ?? item.path?.split('/').pop() ?? '',
+    })) as T[]
+  )
+
+  const count = computed(() => items.value.length)
 
   return { items, count, refresh }
 }

@@ -1,229 +1,498 @@
-# CLAUDE.md
+# CLAUDE.md — Hisho
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**Hisho** (秘書, "secrétaire" en japonais) est une application personnelle de gestion de portfolio professionnel augmenté par IA. Elle centralise les expériences, compétences, projets et certifications sous forme de fichiers Markdown, et expose un assistant IA (Claude) pour générer des dossiers techniques, rédiger des mails/posts LinkedIn et construire des CV sur mesure.
 
-## Project Overview
+---
 
-Full-stack web application template with:
-- **Frontend**: Nuxt 4 (Vue 3) with shadcn-vue UI components and Tailwind CSS v4
-- **Backend**: AdonisJS 6 API server with PostgreSQL database
-- **Infrastructure**: Docker Compose orchestration
+## Architecture technique
 
-## Development Commands
+### Vue d'ensemble
 
-### Backend (AdonisJS)
-
-```bash
-cd backend
-
-# Development server with hot reload
-npm run dev
-
-# Run tests (Japa test runner)
-npm test
-
-# Run specific test suite
-node ace test -- --files=tests/unit/**
-node ace test -- --files=tests/functional/**
-
-# Build for production
-npm run build
-
-# Lint code
-npm run lint
-
-# Format code with Prettier
-npm run format
-
-# Type checking
-npm run typecheck
-
-# Database migrations
-node ace migration:run
-node ace migration:rollback
-node ace migration:fresh
-
-# Generate migration
-node ace make:migration <name>
-
-# Generate model
-node ace make:model <name>
-
-# Generate controller
-node ace make:controller <name>
-
-# Generate middleware
-node ace make:middleware <name>
+```
+Hisho/
+├── frontend/          # Nuxt 4 (Vue 3) — UI + Nuxt Content v3
+├── backend/           # AdonisJS 6 — API métier + proxy LLM
+├── content/           # Fichiers Markdown (expériences, compétences, etc.)
+└── docker-compose.yml
 ```
 
-### Frontend (Nuxt)
+### Frontend (Nuxt 4)
 
+**Framework** : Nuxt 4 avec Vue 3, TypeScript strict
+
+**Modules clés** :
+- `@nuxt/content` v3 — parsing et query des fichiers Markdown
+- `shadcn-nuxt` — composants UI (style "new-york", sans préfixe)
+- `@pinia/nuxt` — state management
+- `@nuxt/icon` — icônes Lucide + Unicons
+- Tailwind CSS v4 avec espace OKLCH
+
+**Structure** :
+```
+frontend/app/
+├── pages/
+│   ├── index.vue               # Dashboard / accueil
+│   ├── content/
+│   │   ├── index.vue           # Content Browser
+│   │   ├── experiences/        # Liste + détail expériences
+│   │   ├── skills/             # Liste compétences
+│   │   ├── projects/           # Liste projets
+│   │   └── certifications/     # Liste certifications
+│   ├── cv-builder/
+│   │   └── index.vue           # CV Builder drag & drop
+│   ├── assistant/
+│   │   └── index.vue           # AI Assistant
+│   └── phrasers/
+│       └── index.vue           # Phraser Manager
+├── components/
+│   ├── ui/                     # shadcn-vue components
+│   ├── content/                # Composants Content Browser
+│   ├── cv/                     # Composants CV Builder
+│   └── assistant/              # Composants AI Assistant
+├── composables/
+│   ├── useAuth.ts              # Auth (existant)
+│   ├── useContent.ts           # Query Nuxt Content
+│   ├── useAI.ts                # Appels IA via backend
+│   └── useCVBuilder.ts         # Logique drag & drop CV
+├── stores/
+│   ├── auth.ts                 # Auth store (existant)
+│   └── cvBuilder.ts            # État du CV en construction
+└── assets/css/main.css
+```
+
+**Appels API** :
+- Routes `/api/v1/**` → proxy vers le backend AdonisJS
+- Contenu Markdown → `queryCollection()` (Nuxt Content v3, côté serveur/client)
+- **Jamais d'appel direct à l'API Anthropic depuis le client**
+
+### Backend (AdonisJS 6)
+
+**Framework** : AdonisJS 6, TypeScript strict
+
+**Rôle** : logique métier, proxy LLM sécurisé, gestion des phrasers en base
+
+**Structure** :
+```
+backend/app/
+├── controllers/
+│   ├── auth_controller.ts      # Auth (existant)
+│   ├── ai_controller.ts        # Proxy LLM (génération DT, mail, CV)
+│   └── phrasers_controller.ts  # CRUD phrasers
+├── services/
+│   ├── claude_service.ts       # Wrapper SDK Anthropic
+│   └── content_service.ts      # Helpers pour construire les contextes IA
+├── models/
+│   ├── user.ts                 # (existant)
+│   └── phraser.ts              # Modèle Phraser en DB
+├── validators/
+│   ├── auth.ts                 # (existant)
+│   └── ai.ts                   # Validation des inputs IA
+└── middleware/
+```
+
+**Routes API** :
+```
+POST /api/v1/ai/generate-dt        # Générer un dossier technique
+POST /api/v1/ai/compose            # Rédiger mail/LinkedIn/réponse
+POST /api/v1/ai/rewrite            # Réécrire un bloc d'expérience
+GET  /api/v1/phrasers              # Lister les phrasers
+POST /api/v1/phrasers              # Créer un phraser
+PUT  /api/v1/phrasers/:id          # Modifier un phraser
+DELETE /api/v1/phrasers/:id        # Supprimer un phraser
+```
+
+**Variables d'environnement supplémentaires** (backend `.env`) :
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-5
+```
+
+### Contenu Markdown
+
+Les fichiers Markdown sont dans `content/` à la racine du projet (ou `frontend/content/` selon config Nuxt Content). Nuxt Content v3 les parse et expose une API de query.
+
+**Installation** :
 ```bash
 cd frontend
-
-# Development server (http://localhost:3000)
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Generate static site
-npm run generate
-
-# Add shadcn-vue components
-npx shadcn-vue@latest add <component-name>
+npm install @nuxt/content
 ```
 
-### Docker Compose
-
-```bash
-# Start all services
-docker-compose up
-
-# Start in detached mode
-docker-compose up -d
-
-# Rebuild containers
-docker-compose up --build
-
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f
+**Configuration** (`nuxt.config.ts`) :
+```ts
+modules: ['@nuxt/content', ...]
+content: {
+  // collections définies dans content.config.ts
+}
 ```
 
-## Architecture
+---
 
-### Backend (AdonisJS)
+## Structure des contenus Markdown
 
-**Framework**: AdonisJS 6 with TypeScript
+### `content/experiences/*.md`
 
-**Key Features**:
-- PostgreSQL database via Lucid ORM
-- Session-based authentication (@adonisjs/auth)
-- CORS support
-- VineJS validation
-- Cookie session storage
+```yaml
+---
+title: "Développeur Full-Stack — Projet X"
+client: "Acme Corp"
+role: "Développeur Full-Stack Senior"
+type: "mission"          # mission | emploi | freelance
+startDate: "2024-01"
+endDate: "2024-06"       # omis si en cours
+duration: "6 mois"
+location: "Paris (hybride)"
+stack:
+  - TypeScript
+  - Nuxt 3
+  - AdonisJS
+  - PostgreSQL
+tags:
+  - fullstack
+  - api-rest
+  - frontend
+  - agile
+highlights:
+  - "Refonte complète de l'interface utilisateur en Nuxt 3"
+  - "Mise en place d'une API REST AdonisJS avec authentification JWT"
+  - "Réduction de 40% du temps de chargement"
+---
 
-**Directory Structure**:
-- `app/models/` - Lucid ORM models
-- `app/controllers/` - HTTP controllers
-- `app/middleware/` - HTTP middleware
-- `app/exceptions/` - Exception handlers
-- `app/validators/` - VineJS validators
-- `database/migrations/` - Database migrations
-- `start/routes.ts` - Route definitions
-- `start/kernel.ts` - Middleware registration
-- `config/` - Configuration files
-- `tests/` - Test suites (unit and functional)
+Description détaillée de la mission, contexte métier, enjeux techniques...
+```
 
-**Import Aliases** (defined in package.json):
-- `#controllers/*` → `./app/controllers/*.js`
-- `#models/*` → `./app/models/*.js`
-- `#middleware/*` → `./app/middleware/*.js`
-- `#validators/*` → `./app/validators/*.js`
-- `#services/*` → `./app/services/*.js`
-- `#config/*` → `./config/*.js`
-- `#database/*` → `./database/*.js`
-- `#start/*` → `./start/*.js`
-- `#tests/*` → `./tests/*.js`
+### `content/skills/*.md`
 
-**Middleware Stack**:
-- Server middleware (runs on all requests):
-  - `container_bindings_middleware` - Request container bindings
-  - `force_json_response_middleware` - Forces JSON responses for all requests
-  - `@adonisjs/cors/cors_middleware` - CORS handling
+```yaml
+---
+title: "TypeScript"
+category: "Langage"        # Langage | Framework | Outil | Cloud | Méthode
+level: "expert"            # débutant | intermédiaire | avancé | expert
+tags:
+  - frontend
+  - backend
+  - typage
+yearsOfExperience: 4
+contexts:
+  - "Développement full-stack (Nuxt, AdonisJS)"
+  - "Typage strict, generics, decorators"
+lastUsed: "2024-06"
+---
 
-- Router middleware (runs on routes):
-  - `@adonisjs/core/bodyparser_middleware` - Request body parsing
-  - `@adonisjs/session/session_middleware` - Session handling
-  - `@adonisjs/auth/initialize_auth_middleware` - Auth initialization
+Description du contexte d'utilisation, projets associés...
+```
 
-- Named middleware (apply to specific routes):
-  - `auth` - Requires authenticated user
-  - `guest` - Requires unauthenticated user
-  - `silent_auth` - Optional authentication
+### `content/projects/*.md`
 
-**Testing**:
-- Framework: Japa
-- Two test suites:
-  - `unit` - Unit tests (2s timeout) in `tests/unit/**/*.spec.ts`
-  - `functional` - API tests (30s timeout) in `tests/functional/**/*.spec.ts`
-- API client and assertion plugins included
+```yaml
+---
+title: "Hisho"
+type: "personnel"          # personnel | professionnel | open-source
+status: "en-cours"         # en-cours | terminé | abandonné
+startDate: "2024-04"
+endDate: null
+stack:
+  - Nuxt 4
+  - AdonisJS 6
+  - PostgreSQL
+  - Claude API
+tags:
+  - fullstack
+  - ia
+  - portfolio
+url: "https://github.com/..."
+demo: null
+---
 
-**Hot Module Replacement**:
-- Controllers and middleware have HMR enabled (hot-hook)
-- Changes auto-reload without server restart
+Description du projet, objectifs, apprentissages...
+```
 
-### Frontend (Nuxt)
+### `content/certifications/*.md`
 
-**Framework**: Nuxt 4 (Vue 3)
+```yaml
+---
+title: "AWS Solutions Architect Associate"
+organism: "Amazon Web Services"
+date: "2023-06"
+expiry: "2026-06"          # null si pas d'expiration
+credentialId: "ABC123"
+url: "https://..."
+tags:
+  - cloud
+  - aws
+  - architecture
+---
 
-**UI System**:
-- shadcn-vue components with "new-york" style
-- No component prefix (use components directly)
-- Components in `app/components/ui/`
-- Tailwind CSS v4 with OKLCH color space
-- Dark mode support via `.dark` class
-- Icons: Lucide and Unicons via @nuxt/icon
+Notes personnelles sur la certification...
+```
 
-**Directory Structure**:
-- `app/app.vue` - Root component
-- `app/pages/` - File-based routing
-- `app/layouts/` - Layout components
-- `app/components/ui/` - shadcn-vue UI components
-- `app/lib/utils.ts` - Utility functions (cn() helper)
-- `app/assets/css/main.css` - Global styles and theme variables
-- `app/plugins/` - Nuxt plugins
-- `app/middleware/` - Route middleware
+### `content/phrasers/*.md`
 
-**Path Aliases**:
-- `@/components` - Components directory
-- `@/lib` - Utilities
-- `@/components/ui` - UI components
-- `@/composables` - Vue composables
+> Les phrasers peuvent être stockés en Markdown (lecture seule) **ou** en base PostgreSQL via le Phraser Manager (CRUD). Les fichiers Markdown servent de phrasers système pré-définis.
 
-**API Integration**:
-- Routes starting with `/api/v1/**` proxy to backend
-- Backend URL from `.env` file: `API_URL` (default: http://localhost:3333)
-- Uses dotenv to load environment variables
+```yaml
+---
+title: "Professionnel concis"
+slug: "pro-concis"
+description: "Ton professionnel, phrases courtes, vocabulaire technique précis"
+useCase:
+  - "email"
+  - "linkedin"
+  - "réponse-recruteur"
+language: "fr"
+---
 
-**Nuxt Modules**:
-- `@nuxt/eslint` - ESLint integration
-- `@nuxt/ui` - Nuxt UI utilities
-- `shadcn-nuxt` - shadcn-vue for Nuxt
-- `@nuxt/icon` - Iconify icon system
+## Instructions système
 
-### Database
+Tu es un rédacteur professionnel expert. Tes réponses sont concises, directes et utilisent un vocabulaire technique précis. Tu évites les formules creuses et les superlatifs. Chaque phrase a un but.
 
-**System**: PostgreSQL 15 (Alpine)
+## Exemples
 
-**Connection**:
-- Default connection: `postgres`
-- Migrations in `backend/database/migrations/`
-- Natural sort for migration order
+**Entrée** : Reformule cette expérience pour un mail de candidature
+**Sortie** : "J'ai conduit la migration d'une architecture monolithique vers des microservices, réduisant les temps de déploiement de 60% et améliorant la résilience du système."
+```
 
-**Environment Variables** (backend):
-- `DB_HOST` - Database host (default: 127.0.0.1, docker: postgres)
-- `DB_PORT` - Database port (default: 5432)
-- `DB_USER` - Database user (default: root)
-- `DB_PASSWORD` - Database password (default: root)
-- `DB_DATABASE` - Database name (default: app)
+---
 
-### Docker Setup
+## Modules fonctionnels
 
-Three services:
-1. **postgres** - PostgreSQL 15 database on port 5432
-2. **backend** - AdonisJS API on port 3333
-3. **frontend** - Nuxt app on port 3000
+### Content Browser
 
-**Important**: Backend waits for postgres health check before starting.
+Navigation et filtrage dans le portfolio.
 
-## Environment Configuration
+**Fonctionnalités** :
+- Vue liste/grille pour chaque type (expériences, compétences, projets, certifs)
+- Filtres par tags, stack, niveau, dates
+- Recherche full-text via Nuxt Content
+- Affichage du détail avec rendu Markdown
+
+**Composable principal** (`useContent.ts`) :
+```ts
+// Query typée des collections
+const { data: experiences } = await useAsyncData(() =>
+  queryCollection('experiences')
+    .where('tags', 'CONTAINS', selectedTag.value)
+    .order('startDate', 'DESC')
+    .all()
+)
+```
+
+### AI Assistant
+
+Interface pour les cas d'usage IA. Toujours côté serveur via backend.
+
+**Cas d'usage** :
+
+1. **Génération de dossier technique (DT)**
+   - Input : structure du DT cible + contexte de la mission
+   - L'IA sélectionne les expériences pertinentes et pré-remplit le DT
+   - Output : Markdown éditable
+
+2. **Rédaction mail/LinkedIn/réponse**
+   - Input : instructions libres + sélection d'un phraser
+   - Output : texte prêt à copier, éditable
+
+3. **Réécriture de bloc d'expérience**
+   - Input : bloc Markdown + phraser + instructions
+   - Output : version réécrite
+
+**Composable** (`useAI.ts`) :
+```ts
+const { generate, isLoading, result } = useAI()
+
+await generate({
+  type: 'compose',
+  phraserId: 'pro-concis',
+  instructions: 'Rédige un mail de candidature pour ce poste...',
+  context: selectedExperiences.value
+})
+```
+
+### CV Builder
+
+Sélection drag & drop d'expériences et génération PDF.
+
+**Fonctionnalités** :
+- Liste des expériences disponibles (depuis Nuxt Content)
+- Zone de drop pour composer le CV
+- Réorganisation par drag & drop (vue-draggable ou @dnd-kit)
+- Sélection du template CV
+- Export PDF (puppeteer côté backend ou html2canvas côté client)
+
+**Store** (`cvBuilder.ts`) :
+```ts
+interface CVBuilderState {
+  selectedExperiences: Experience[]
+  template: 'standard' | 'compact' | 'tech'
+  customSections: CVSection[]
+}
+```
+
+### Phraser Manager
+
+CRUD des profils de ton/style via l'interface.
+
+**Fonctionnalités** :
+- Liste des phrasers (base DB + phrasers système depuis Markdown)
+- Formulaire création/édition (nom, description, instructions système, exemples, use cases)
+- Prévisualisation : tester le phraser sur un texte exemple
+- Phrasers système (depuis `content/phrasers/*.md`) : lecture seule
+
+---
+
+## Conventions de code
+
+### TypeScript strict
+
+- `strict: true` partout (frontend et backend)
+- Types explicites pour tous les paramètres et retours de fonction
+- Interfaces pour tous les schémas de données (Experience, Skill, Project, etc.)
+
+### Types partagés
+
+Définir les interfaces dans `frontend/app/types/content.ts` :
+```ts
+export interface Experience {
+  title: string
+  client: string
+  role: string
+  type: 'mission' | 'emploi' | 'freelance'
+  startDate: string
+  endDate?: string
+  stack: string[]
+  tags: string[]
+  highlights: string[]
+}
+
+export interface Phraser {
+  id: string
+  title: string
+  slug: string
+  description: string
+  useCase: string[]
+  systemPrompt: string
+  examples?: { input: string; output: string }[]
+}
+```
+
+### Composables Vue
+
+- Toute logique réutilisable dans un composable (`use*.ts`)
+- `useContent.ts` — accès aux données Markdown via Nuxt Content
+- `useAI.ts` — appels IA (encapsule `$fetch` vers `/api/v1/ai/*`)
+- `useCVBuilder.ts` — logique de sélection/drag & drop
+- `usePhrasers.ts` — CRUD phrasers via API
+
+### Appels API
+
+```ts
+// CORRECT — appel backend depuis composable
+const { data } = await useFetch('/api/v1/ai/compose', {
+  method: 'POST',
+  body: { phraserId, instructions, context }
+})
+
+// INTERDIT — jamais d'appel Anthropic direct depuis le client
+// import Anthropic from '@anthropic-ai/sdk' // ← JAMAIS dans le frontend
+```
+
+### Nuxt Content v3 — Accès aux données
+
+```ts
+// Lister une collection
+const experiences = await queryCollection('experiences').all()
+
+// Filtrer
+const filtered = await queryCollection('experiences')
+  .where('tags', 'CONTAINS', 'fullstack')
+  .order('startDate', 'DESC')
+  .all()
+
+// Récupérer un document
+const xp = await queryCollection('experiences').path('/experiences/mon-projet').first()
+```
+
+### Service Claude (backend)
+
+```ts
+// backend/app/services/claude_service.ts
+import Anthropic from '@anthropic-ai/sdk'
+
+export class ClaudeService {
+  private client = new Anthropic({ apiKey: env.get('ANTHROPIC_API_KEY') })
+  private model = env.get('ANTHROPIC_MODEL', 'claude-sonnet-4-5')
+
+  async generate(systemPrompt: string, userMessage: string): Promise<string> {
+    const response = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    })
+    return response.content[0].type === 'text' ? response.content[0].text : ''
+  }
+}
+```
+
+---
+
+## Workflow IA — Pattern standard
+
+Pour chaque génération IA, suivre ce pattern :
+
+### 1. Filtrer les contenus pertinents (frontend)
+
+```ts
+// useAI.ts — avant d'appeler le backend
+const relevantExperiences = await queryCollection('experiences')
+  .where('tags', 'CONTAINS_ANY', missionTags)
+  .order('startDate', 'DESC')
+  .limit(5)
+  .all()
+```
+
+### 2. Construire le contexte (frontend → backend)
+
+Le frontend envoie au backend :
+```ts
+{
+  type: 'generate-dt' | 'compose' | 'rewrite',
+  phraserId: string,
+  template?: string,           // structure du DT cible
+  missionContext?: string,     // contexte de la mission
+  experiences: Experience[],   // expériences filtrées (contenu complet)
+  freeInstructions?: string,   // instructions libres de l'utilisateur
+  blockToRewrite?: string      // pour le cas 'rewrite'
+}
+```
+
+### 3. Appel API Claude (backend only)
+
+```ts
+// backend/app/controllers/ai_controller.ts
+async generateDT({ request, auth }: HttpContext) {
+  const user = await auth.getUserOrFail()
+  const payload = await request.validateUsing(generateDTValidator)
+
+  const phraser = await Phraser.findOrFail(payload.phraserId)
+
+  const systemPrompt = buildSystemPrompt(phraser)
+  const userMessage = buildDTMessage(payload.experiences, payload.template, payload.missionContext)
+
+  const result = await claudeService.generate(systemPrompt, userMessage)
+
+  return { result, tokensUsed: /* ... */ }
+}
+```
+
+### 4. Review humaine (frontend)
+
+- Le résultat est toujours retourné comme texte éditable
+- L'utilisateur peut modifier avant de copier/exporter
+- Pas de sauvegarde automatique côté serveur
+
+---
+
+## Variables d'environnement
 
 ### Backend `.env`
 
@@ -232,16 +501,20 @@ TZ=UTC
 PORT=3333
 HOST=localhost
 LOG_LEVEL=info
-APP_KEY=<generate with: node ace generate:key>
+APP_KEY=<node ace generate:key>
 NODE_ENV=development
 
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_USER=root
 DB_PASSWORD=root
-DB_DATABASE=app
+DB_DATABASE=hisho
 
 SESSION_DRIVER=cookie
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-5
 ```
 
 ### Frontend `.env`
@@ -250,267 +523,115 @@ SESSION_DRIVER=cookie
 API_URL=http://localhost:3333
 ```
 
-For Docker, set `API_URL=http://backend:3333` to use service name.
+---
 
-## Code Style
+## Commandes de développement
 
-### Backend
-- Uses `@adonisjs/prettier-config` for formatting
-- ESLint config: `@adonisjs/eslint-config`
-- TypeScript strict mode
+### Backend (AdonisJS)
 
-### Frontend
-- Nuxt ESLint module
-- Tailwind CSS v4 conventions
-- Use `cn()` utility for conditional classes
+```bash
+cd backend
 
-## Key Patterns
+npm run dev                              # Dev server avec HMR
+npm test                                 # Tests Japa
+npm run lint && npm run format           # Qualité code
+npm run typecheck                        # Vérification TypeScript
 
-### Backend Routing
-Routes defined in `start/routes.ts`:
-```ts
-import router from '@adonisjs/core/services/router'
-import { middleware } from '#start/kernel'
-
-router.get('/', async () => ({ hello: 'world' }))
-
-// With middleware
-router.post('/login', 'AuthController.login').use(middleware.guest())
+node ace migration:run                   # Migrations DB
+node ace migration:fresh                 # Reset + migrate
+node ace make:migration <name>           # Nouvelle migration
+node ace make:model <name>               # Nouveau modèle
+node ace make:controller <name>          # Nouveau controller
+node ace make:service <name>             # Nouveau service
 ```
 
-### Frontend API Calls
-Use `$fetch` or `useFetch` composable with `/api/v1` prefix:
-```ts
-// Will proxy to backend
-const data = await $fetch('/api/v1/users')
+### Frontend (Nuxt)
+
+```bash
+cd frontend
+
+npm run dev                              # Dev server (http://localhost:3000)
+npm run build                            # Build production
+npm run preview                          # Prévisualiser le build
+
+npx shadcn-vue@latest add <component>    # Ajouter un composant shadcn
 ```
 
-### UI Components
-Use shadcn-vue components without prefix:
-```vue
-<template>
-  <Button variant="outline">Click me</Button>
-</template>
+### Docker Compose
+
+```bash
+docker-compose up -d                     # Démarrer tous les services
+docker-compose up --build                # Rebuild + démarrer
+docker-compose down                      # Arrêter
+docker-compose logs -f backend           # Logs backend
 ```
 
-### Force JSON Responses
-The backend automatically forces all responses to JSON format via `force_json_response_middleware`. This ensures validation errors, auth errors, and framework responses return JSON instead of HTML.
+---
 
-## Authentication System
+## Phases de développement
 
-### Backend Authentication
+### Phase 1 — Structure content + Content Browser
 
-**Session Guard Configuration** (`config/auth.ts`):
-- Uses `sessionGuard` with `sessionUserProvider`
-- User model: `User` with AuthFinder mixin
-- Password hashing: scrypt (via `@adonisjs/core/services/hash`)
-- Remember me tokens: disabled by default
+- [ ] Installer et configurer `@nuxt/content` v3
+- [ ] Définir les collections dans `content.config.ts`
+- [ ] Créer les fichiers Markdown d'exemple (2-3 par type)
+- [ ] Implémenter `useContent.ts` avec les queries typées
+- [ ] Pages Content Browser (liste + filtres + détail)
+- [ ] Composants de card pour chaque type de contenu
 
-**User Model** (`app/models/user.ts`):
-- Includes `withAuthFinder` mixin for credential verification
-- Fields: `id`, `fullName`, `email`, `password`, `createdAt`, `updatedAt`
-- Password field: serialized as null (never sent to client)
-- UID field: `email`
+### Phase 2 — AI Assistant basique
 
-**Auth Routes** (`/api/v1/auth`):
-- `POST /register` - Create new user account (guest only)
-- `POST /login` - Login with email/password (guest only)
-- `POST /logout` - Logout current user (auth required)
-- `GET /me` - Get current user info (auth required)
+- [ ] Installer `@anthropic-ai/sdk` dans le backend
+- [ ] Créer `ClaudeService` + variables d'environnement
+- [ ] Routes `/api/v1/ai/*` avec validation VineJS
+- [ ] Modèle `Phraser` + migration + CRUD routes
+- [ ] Composable `useAI.ts` côté frontend
+- [ ] Page AI Assistant avec les 3 cas d'usage
+- [ ] Intégration phraser (sélection + chargement depuis DB)
 
-**Validators** (`app/validators/auth.ts`):
-- `registerValidator` - Validates email uniqueness, password min 8 chars
-- `loginValidator` - Validates email and password format
+### Phase 3 — CV Builder drag & drop + export PDF
 
-**Auth Controller** (`app/controllers/auth_controller.ts`):
-- All methods return JSON responses with user object
-- User object includes: `id`, `email`, `fullName` (never includes password)
-- Uses `User.verifyCredentials()` for login
-- Uses `auth.use('web').login(user)` to create session
+- [ ] Store `cvBuilder.ts` (sélection d'expériences)
+- [ ] Interface drag & drop (vue-draggable ou @dnd-kit/core)
+- [ ] Templates CV en HTML/CSS (standard, compact, tech)
+- [ ] Route backend `/api/v1/cv/export` → génération PDF
+- [ ] Page CV Builder complète
 
-### Frontend Authentication
+### Phase 4 — Phraser Manager + raffinements UX
 
-**State Management** (`app/stores/auth.ts`):
-- Pinia store with user state
-- Actions: `login`, `register`, `logout`, `fetchUser`
-- Getters: `currentUser`
-- State: `user`, `isAuthenticated`, `isLoading`
+- [ ] Page Phraser Manager (CRUD complet)
+- [ ] Formulaire création/édition avec prévisualisation
+- [ ] Import phrasers depuis fichiers Markdown (read-only)
+- [ ] Améliorations UX : transitions, raccourcis, responsive
+- [ ] Streaming des réponses IA (SSE ou streaming $fetch)
 
-**Composable** (`app/composables/useAuth.ts`):
-- Wrapper around auth store
-- Provides: `user`, `isAuthenticated`, `isLoading`
-- Methods: `login()`, `register()`, `logout()`, `fetchUser()`, `requireAuth()`, `requireGuest()`
-- Auto-redirects on logout
+---
 
-**Middleware**:
-- `auth` - Requires authenticated user, redirects to `/login`
-- `guest` - Requires unauthenticated user, redirects to `/`
+## Notes importantes
 
-**Pages**:
-- `/login` - Login form (guest middleware)
-- `/register` - Registration form (guest middleware)
-- `/` - Home page with conditional rendering
+- **Sécurité** : La clé API Anthropic ne doit jamais être exposée côté client. Tout appel LLM passe par le backend AdonisJS.
+- **Auth** : Toutes les routes `/api/v1/ai/*` et `/api/v1/phrasers/*` nécessitent `middleware.auth()`.
+- **Nuxt Content** : Les fichiers Markdown sont en lecture seule depuis l'app. Les modifications se font directement dans `content/` (éditeur texte ou IDE).
+- **Phrasers** : Deux sources — fichiers Markdown système (`content/phrasers/`) en lecture seule + phrasers utilisateur en base PostgreSQL.
+- **PDF** : Privilégier la génération côté serveur (puppeteer) pour une fidélité maximale au rendu CSS.
+- **Streaming** : Pour l'UX IA, implémenter le streaming des réponses via Server-Sent Events (AdonisJS supporte les streams natifs).
 
-### Authentication Flow
+---
 
-1. **Registration**:
-   - User submits form → Frontend validates → POST `/api/v1/auth/register`
-   - Backend validates with VineJS → Creates user → Auto-login → Returns user object
-   - Frontend stores user in Pinia → Redirects to home
+## Architecture existante conservée
 
-2. **Login**:
-   - User submits form → Frontend validates → POST `/api/v1/auth/login`
-   - Backend verifies credentials → Creates session → Returns user object
-   - Frontend stores user in Pinia → Redirects to home
+Toute la configuration existante (auth, CORS, middleware, transitions, Docker) décrite dans le CLAUDE.md initial reste valide. Les sections ci-dessus viennent s'y ajouter pour spécifier le périmètre fonctionnel de Hisho.
 
-3. **Logout**:
-   - User clicks logout → POST `/api/v1/auth/logout`
-   - Backend destroys session → Frontend clears Pinia state → Redirects to login
+### Backend — Middleware stack
 
-4. **Session Persistence**:
-   - On page load, frontend calls `fetchUser()` if not authenticated
-   - GET `/api/v1/auth/me` returns user if session exists
-   - If session expired, user redirected to login
+- Server : `container_bindings`, `force_json_response`, `cors`
+- Router : `bodyparser`, `session`, `initialize_auth`
+- Named : `auth`, `guest`, `silent_auth`
 
-### Using Authentication in Pages
+### Frontend — Transitions disponibles
 
-```vue
-<script setup lang="ts">
-// Require authentication
-definePageMeta({
-  middleware: 'auth'
-})
+`page` (horizontal), `slide` (vertical), `fade`, `scale` — configurables via `definePageMeta({ pageTransition: { name: '...', mode: 'out-in' } })`
 
-const { user, logout } = useAuth()
-</script>
+### Import aliases backend
 
-<template>
-  <div>
-    <p>Welcome {{ user?.email }}</p>
-    <button @click="logout">Logout</button>
-  </div>
-</template>
-```
-
-### Using Authentication in API Routes
-
-```ts
-import { middleware } from '#start/kernel'
-import router from '@adonisjs/core/services/router'
-
-// Protected route
-router
-  .get('/dashboard', async ({ auth }) => {
-    const user = auth.getUserOrFail()
-    return { user }
-  })
-  .use(middleware.auth())
-
-// Guest route
-router
-  .post('/login', [AuthController, 'login'])
-  .use(middleware.guest())
-```
-
-## Page Transitions
-
-The application uses Nuxt's built-in page transition system for smooth navigation between pages.
-
-### Available Transitions
-
-Four transition styles are pre-configured in `app.vue`:
-
-1. **page** (default) - Horizontal slide with fade
-   - Enter: slides in from right, fades in
-   - Leave: slides out to left, fades out
-   - Duration: 300ms
-
-2. **slide** - Vertical slide with fade
-   - Enter: slides in from bottom, fades in
-   - Leave: slides out to top, fades out
-   - Duration: 300ms with cubic-bezier easing
-
-3. **fade** - Simple opacity transition
-   - Duration: 200ms
-   - Best for modal-like pages (login, register)
-
-4. **scale** - Scale with fade
-   - Enter: scales from 95% to 100%
-   - Leave: scales from 100% to 105%
-   - Duration: 300ms with cubic-bezier easing
-
-### Using Transitions
-
-Define transitions per-page using `definePageMeta()`:
-
-```vue
-<script setup lang="ts">
-definePageMeta({
-  pageTransition: {
-    name: 'page',      // Transition name (page, slide, fade, scale)
-    mode: 'out-in'     // Wait for old page to leave before entering new page
-  }
-})
-</script>
-```
-
-### Examples
-
-```vue
-// Index page - horizontal slide
-definePageMeta({
-  pageTransition: {
-    name: 'page',
-    mode: 'out-in'
-  }
-})
-
-// Login/Register - fade
-definePageMeta({
-  pageTransition: {
-    name: 'fade',
-    mode: 'out-in'
-  }
-})
-
-// Dashboard - default page transition
-definePageMeta({
-  pageTransition: {
-    name: 'page',
-    mode: 'out-in'
-  }
-})
-```
-
-### Loading Indicators
-
-The app includes two loading indicators:
-
-1. **NuxtLoadingIndicator** - Blue progress bar at top of page
-   - Appears automatically during page transitions
-   - Color: `#3b82f6` (blue-500)
-
-2. **LoadingScreen** - Full-page loader
-   - Shows during initial app hydration
-   - Displays "Initializing..." message
-   - Fades out when app is ready
-
-### Transition Mode
-
-The `mode: 'out-in'` ensures:
-- Old page completes exit animation
-- Then new page enters
-- Prevents content overlap during transition
-- Creates smoother visual experience
-
-## Important Notes
-
-- Backend uses session-based auth with cookies, not JWT
-- Sessions are stored in cookies (SESSION_DRIVER=cookie)
-- All backend responses are JSON (forced by middleware)
-- Frontend proxies `/api/v1/**` to backend API
-- User passwords are hashed with scrypt and never sent to client
-- CORS is configured to allow credentials (required for session cookies)
-- Use AdonisJS ace commands (not npm scripts) for most backend tasks
-- shadcn-vue components can be added on-demand with the CLI
-- Icons use Iconify collections (lucide, uil) via @nuxt/icon
+`#controllers/*`, `#models/*`, `#services/*`, `#middleware/*`, `#validators/*`, `#start/*`, `#config/*`, `#database/*`

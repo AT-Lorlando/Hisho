@@ -27,8 +27,8 @@ async function handleDelete(slug: string) {
     <template #list-item="{ item, isActive }">
       <ContentListItem
         :title="item.title"
-        :meta="`${item.category} · ${item.level}`"
-        :tags="item.tags ?? []"
+        :meta="`${item.domain}${item.yearsOfExperience ? ` · ${item.yearsOfExperience} ans` : ''}`"
+        :tags="[]"
         :has-ai-summary="!!item.aiSummary"
         :is-active="isActive"
       />
@@ -38,13 +38,12 @@ async function handleDelete(slug: string) {
       <ContentPreview
         :title="item.title"
         :meta-items="[
-          { icon: 'lucide:folder', label: item.category },
-          { icon: 'lucide:bar-chart', label: item.level },
-          ...(item.yearsOfExperience ? [{ icon: 'lucide:clock', label: `${item.yearsOfExperience} ans` }] : []),
+          { icon: 'lucide:layers', label: item.domain },
+          ...(item.yearsOfExperience ? [{ icon: 'lucide:clock', label: `${item.yearsOfExperience} ans d'expérience` }] : []),
         ]"
-        :tags="item.tags ?? []"
+        :tags="[]"
         :ai-summary="item.aiSummary"
-        :body="item.contexts"
+        :body="item.body"
         :slug="item.slug"
         :edit-path="`/profile/skills/edit/${item.slug}`"
         @delete="handleDelete"

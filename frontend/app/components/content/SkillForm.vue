@@ -4,21 +4,16 @@ import type { Skill, SkillPayload } from '~/types/content'
 const props = defineProps<{ initial?: Skill | null }>()
 const emit = defineEmits<{ submit: [data: SkillPayload]; cancel: [] }>()
 
+const { items: domains } = useContent<any>('domains')
+
 const form = reactive<SkillPayload>({
   title: props.initial?.title ?? '',
-  category: props.initial?.category ?? '',
-  level: props.initial?.level ?? 'intermédiaire',
-  tags: props.initial?.tags ?? [],
+  domain: props.initial?.domain ?? '',
   yearsOfExperience: props.initial?.yearsOfExperience ?? undefined,
-  lastUsed: props.initial?.lastUsed ?? '',
-  contexts: props.initial?.contexts ?? '',
   body: props.initial?.body ?? '',
 })
 
-const tagsInput = ref((props.initial?.tags ?? []).join(', '))
-
 function handleSubmit() {
-  form.tags = tagsInput.value.split(',').map(s => s.trim()).filter(Boolean)
   emit('submit', { ...form })
 }
 </script>
@@ -28,61 +23,35 @@ function handleSubmit() {
     <div class="grid grid-cols-2 gap-4">
       <div class="space-y-1.5">
         <Label for="title">Compétence *</Label>
-        <Input id="title" v-model="form.title" placeholder="TypeScript" required />
+        <Input id="title" v-model="form.title" placeholder="ELK Stack" required />
       </div>
       <div class="space-y-1.5">
-        <Label for="category">Catégorie *</Label>
-        <select id="category" v-model="form.category" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-          <option value="">— Choisir —</option>
-          <option>Langage</option>
-          <option>Framework</option>
-          <option>Outil</option>
-          <option>Cloud</option>
-          <option>Méthode</option>
-          <option>Base de données</option>
-        </select>
+        <Label for="domain">Domaine *</Label>
+        <input
+          id="domain"
+          v-model="form.domain"
+          list="domain-list"
+          required
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="Cybersécurité"
+        />
+        <datalist id="domain-list">
+          <option v-for="d in domains" :key="d.slug" :value="d.title" />
+        </datalist>
       </div>
       <div class="space-y-1.5">
-        <Label for="level">Niveau *</Label>
-        <select id="level" v-model="form.level" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-          <option value="débutant">Débutant</option>
-          <option value="intermédiaire">Intermédiaire</option>
-          <option value="avancé">Avancé</option>
-          <option value="expert">Expert</option>
-        </select>
-      </div>
-      <div class="space-y-1.5">
-        <Label for="yearsOfExperience">Années d'expérience</Label>
-        <Input id="yearsOfExperience" v-model.number="form.yearsOfExperience" type="number" min="0" max="30" placeholder="3" />
-      </div>
-      <div class="space-y-1.5">
-        <Label for="lastUsed">Dernière utilisation</Label>
-        <Input id="lastUsed" v-model="form.lastUsed" placeholder="2024-06" />
-      </div>
-      <div class="space-y-1.5">
-        <Label for="tags">Tags (séparés par virgule)</Label>
-        <Input id="tags" v-model="tagsInput" placeholder="frontend, backend, typage" />
+        <Label for="years">Années d'expérience</Label>
+        <Input id="years" v-model.number="form.yearsOfExperience" type="number" min="0" max="30" placeholder="3" />
       </div>
     </div>
 
     <div class="space-y-1.5">
-      <Label for="contexts">Contextes d'utilisation</Label>
-      <textarea
-        id="contexts"
-        v-model="form.contexts"
-        rows="3"
-        placeholder="Développement full-stack, typage strict, generics..."
-        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
-      />
-    </div>
-
-    <div class="space-y-1.5">
-      <Label for="body">Notes (Markdown)</Label>
+      <Label for="body">Contexte d'utilisation (Markdown)</Label>
       <textarea
         id="body"
         v-model="form.body"
-        rows="3"
-        placeholder="Notes complémentaires..."
+        rows="7"
+        placeholder="Décris comment tu utilises cette techno : projets, contexte, ce qui te distingue, niveau implicite...&#10;&#10;Exemple : 3 déploiements ELK sur systèmes sensibles (prod). Ingestion multi-sources (syslog, beats, API), dashboards Kibana custom, alerting Watcher. Utilisé en contexte SOC pour la détection d'anomalies."
         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none font-mono"
       />
     </div>

@@ -2,6 +2,16 @@ import { defineContentConfig, defineCollection, z } from '@nuxt/content'
 
 export default defineContentConfig({
   collections: {
+    domains: defineCollection({
+      type: 'page',
+      source: 'domains/*.md',
+      schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        order: z.number().optional(),
+        aiSummary: z.string().optional(),
+      }),
+    }),
     experiences: defineCollection({
       type: 'page',
       source: 'experiences/*.md',
@@ -9,12 +19,10 @@ export default defineContentConfig({
         title: z.string(),
         client: z.string(),
         role: z.string(),
-        type: z.enum(['mission', 'emploi', 'freelance']),
         startDate: z.string(),
         endDate: z.string().optional(),
         location: z.string().optional(),
         stack: z.array(z.string()).default([]),
-        tags: z.array(z.string()).default([]),
         highlights: z.array(z.string()).default([]),
         aiSummary: z.string().optional(),
       }),
@@ -24,12 +32,8 @@ export default defineContentConfig({
       source: 'skills/*.md',
       schema: z.object({
         title: z.string(),
-        category: z.string(),
-        level: z.enum(['débutant', 'intermédiaire', 'avancé', 'expert']),
-        tags: z.array(z.string()).default([]),
+        domain: z.string(),
         yearsOfExperience: z.number().optional(),
-        lastUsed: z.string().optional(),
-        contexts: z.string().optional(),
         aiSummary: z.string().optional(),
       }),
     }),
@@ -38,14 +42,10 @@ export default defineContentConfig({
       source: 'projects/*.md',
       schema: z.object({
         title: z.string(),
-        type: z.enum(['personnel', 'professionnel', 'open-source']),
-        status: z.enum(['en-cours', 'terminé', 'abandonné']),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
         stack: z.array(z.string()).default([]),
-        tags: z.array(z.string()).default([]),
         url: z.string().optional(),
-        demo: z.string().optional(),
         aiSummary: z.string().optional(),
       }),
     }),

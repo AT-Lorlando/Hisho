@@ -42,10 +42,10 @@ function isActive(path: string) {
           {{ section.label }}
         </span>
         <span
-          v-if="section.key && counts && (counts as any)[section.key] > 0"
+          v-if="section.key && counts && counts[section.key as keyof typeof counts] > 0"
           class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5"
         >
-          {{ (counts as any)[section.key] }}
+          {{ counts[section.key as keyof typeof counts] }}
         </span>
       </NuxtLink>
     </div>

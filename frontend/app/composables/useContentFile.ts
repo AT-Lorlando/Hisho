@@ -8,7 +8,7 @@ export function useContentFile(type: ContentType) {
     isLoading.value = true
     error.value = null
     try {
-      return await $fetch<{ slug: string }>(`/api/v1/content/${type}`, {
+      return await $fetch<{ slug: string }>(`/api/v1/${type}`, {
         method: 'POST',
         body: data,
       })
@@ -24,7 +24,7 @@ export function useContentFile(type: ContentType) {
     isLoading.value = true
     error.value = null
     try {
-      return await $fetch<{ slug: string }>(`/api/v1/content/${type}/${slug}`, {
+      return await $fetch<{ slug: string }>(`/api/v1/${type}/${slug}`, {
         method: 'PUT',
         body: data,
       })
@@ -40,7 +40,7 @@ export function useContentFile(type: ContentType) {
     isLoading.value = true
     error.value = null
     try {
-      await $fetch(`/api/v1/content/${type}/${slug}`, { method: 'DELETE' })
+      await $fetch(`/api/v1/${type}/${slug}`, { method: 'DELETE' })
     } catch (e: any) {
       error.value = e.data?.message ?? e.message
       throw e

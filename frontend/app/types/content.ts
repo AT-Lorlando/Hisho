@@ -1,5 +1,5 @@
 export interface Domain {
-  _path: string
+  id?: number
   slug: string
   title: string
   description?: string
@@ -9,7 +9,7 @@ export interface Domain {
 }
 
 export interface Experience {
-  _path: string
+  id?: number
   slug: string
   title: string
   role?: string
@@ -18,13 +18,13 @@ export interface Experience {
   startDate?: string
   endDate?: string
   location?: string
-  missions: string[]
+  missionCount?: number
   aiSummary?: string
   body?: string
 }
 
 export interface Mission {
-  _path: string
+  id?: number
   slug: string
   title: string
   type: 'pro' | 'perso'
@@ -39,7 +39,7 @@ export interface Mission {
 }
 
 export interface Skill {
-  _path: string
+  id?: number
   slug: string
   title: string
   domain: string
@@ -49,7 +49,7 @@ export interface Skill {
 }
 
 export interface Certification {
-  _path: string
+  id?: number
   slug: string
   title: string
   organism: string
@@ -108,7 +108,6 @@ export interface ExperiencePayload {
   startDate?: string
   endDate?: string
   location?: string
-  missions?: string[]
   body?: string
 }
 

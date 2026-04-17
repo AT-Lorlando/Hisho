@@ -20,13 +20,13 @@ function toSlug(name: string): string {
 export function useAggregatedDomains() {
   const { data: missions } = useAsyncData<Mission[]>(
     'agg-missions-domains',
-    () => queryCollection('missions' as any).all() as unknown as Promise<Mission[]>,
+    () => $fetch<Mission[]>('/api/v1/missions'),
     { default: () => [] }
   )
 
-  const { data: domainDocs } = useAsyncData<Domain[]>(
+  const { data: domainDocs, refresh: refreshDomainDocs } = useAsyncData<Domain[]>(
     'agg-domain-docs',
-    () => queryCollection('domains' as any).all() as unknown as Promise<Domain[]>,
+    () => $fetch<Domain[]>('/api/v1/domains'),
     { default: () => [] }
   )
 
@@ -47,7 +47,7 @@ export function useAggregatedDomains() {
 
     const result: AggregatedEntry[] = []
     for (const name of allNames) {
-      const doc = docs.find(d => d.title.toLowerCase() === name.toLowerCase())
+      const doc = docs.find((d) => d.title.toLowerCase() === name.toLowerCase())
       result.push({
         name,
         slug: doc?.slug ?? toSlug(name),
@@ -64,19 +64,19 @@ export function useAggregatedDomains() {
     })
   })
 
-  return { aggregated }
+  return { aggregated, refreshDomainDocs }
 }
 
 export function useAggregatedSkills() {
   const { data: missions } = useAsyncData<Mission[]>(
     'agg-missions-skills',
-    () => queryCollection('missions' as any).all() as unknown as Promise<Mission[]>,
+    () => $fetch<Mission[]>('/api/v1/missions'),
     { default: () => [] }
   )
 
-  const { data: skillDocs } = useAsyncData<Skill[]>(
+  const { data: skillDocs, refresh: refreshSkillDocs } = useAsyncData<Skill[]>(
     'agg-skill-docs',
-    () => queryCollection('skills' as any).all() as unknown as Promise<Skill[]>,
+    () => $fetch<Skill[]>('/api/v1/skills'),
     { default: () => [] }
   )
 
@@ -97,7 +97,7 @@ export function useAggregatedSkills() {
 
     const result: AggregatedEntry[] = []
     for (const name of allNames) {
-      const doc = docs.find(d => d.title.toLowerCase() === name.toLowerCase())
+      const doc = docs.find((d) => d.title.toLowerCase() === name.toLowerCase())
       result.push({
         name,
         slug: doc?.slug ?? toSlug(name),
@@ -114,5 +114,5 @@ export function useAggregatedSkills() {
     })
   })
 
-  return { aggregated }
+  return { aggregated, refreshSkillDocs }
 }

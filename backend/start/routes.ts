@@ -13,6 +13,7 @@ import { middleware } from '#start/kernel'
 const AuthController = () => import('#controllers/auth_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const ContentController = () => import('#controllers/content_controller')
+const CompetencyController = () => import('#controllers/competency_controller')
 
 router.get('/', async () => {
   return {
@@ -51,5 +52,16 @@ router
     router.post('/content/:type', [ContentController, 'store'])
     router.put('/content/:type/:slug', [ContentController, 'update'])
     router.delete('/content/:type/:slug', [ContentController, 'destroy'])
+  })
+  .use(middleware.auth())
+
+/**
+ * Competency ratings — require auth
+ */
+router
+  .group(() => {
+    router.get('/competencies', [CompetencyController, 'index'])
+    router.put('/competencies/:type/:slug', [CompetencyController, 'upsert'])
+    router.delete('/competencies/:type/:slug', [CompetencyController, 'destroy'])
   })
   .use(middleware.auth())

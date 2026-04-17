@@ -5,7 +5,7 @@ definePageMeta({ layout: 'profile' })
 
 const { data: missions, refresh } = await useAsyncData<Mission[]>(
   'missions-perso',
-  () => queryCollection('missions').where('type', '=', 'perso').all() as Promise<Mission[]>,
+  () => $fetch<Mission[]>('/api/v1/missions?type=perso'),
   { default: () => [] }
 )
 

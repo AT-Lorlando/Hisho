@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: domain } = await useAsyncData<Domain>(
   `domain-${slug}`,
-  () => queryCollection('domains').where('slug', '=', slug).first() as Promise<Domain>
+  () => $fetch<Domain>(`/api/v1/domains/${slug}`)
 )
 
 if (!domain.value) await navigateTo('/profile/domains')

@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: mission } = await useAsyncData<Mission>(
   `mission-edit-${slug}`,
-  () => queryCollection('missions').where('slug', '=', slug).first() as Promise<Mission>
+  () => $fetch<Mission>(`/api/v1/missions/${slug}`)
 )
 
 if (!mission.value) {

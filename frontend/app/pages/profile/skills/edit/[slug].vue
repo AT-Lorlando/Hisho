@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: skill } = await useAsyncData<Skill>(
   `skill-${slug}`,
-  () => queryCollection('skills').where('slug', '=', slug).first() as Promise<Skill>
+  () => $fetch<Skill>(`/api/v1/skills/${slug}`)
 )
 
 if (!skill.value) await navigateTo('/profile/skills')

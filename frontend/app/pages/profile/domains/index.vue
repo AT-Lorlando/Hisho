@@ -3,7 +3,7 @@ import type { Domain } from '~/types/content'
 
 definePageMeta({ layout: 'profile' })
 
-const { aggregated } = useAggregatedDomains()
+const { aggregated, refreshDomainDocs } = useAggregatedDomains()
 
 const documented = computed(() => aggregated.value.filter(e => e.documented))
 const undocumented = computed(() => aggregated.value.filter(e => !e.documented))
@@ -13,7 +13,7 @@ const { remove } = useContentFile('domains')
 async function handleDelete(slug: string) {
   if (!confirm('Supprimer ce domaine ?')) return
   await remove(slug)
-  await refreshNuxtData('agg-domain-docs')
+  await refreshDomainDocs()
 }
 </script>
 

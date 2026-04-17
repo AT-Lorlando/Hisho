@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: experience } = await useAsyncData<Experience>(
   `experience-detail-${slug}`,
-  () => queryCollection('experiences').where('slug', '=', slug).first() as Promise<Experience>
+  () => $fetch<Experience>(`/api/v1/experiences/${slug}`)
 )
 
 if (!experience.value) {
@@ -17,7 +17,7 @@ if (!experience.value) {
 
 const { data: missions, refresh: refreshMissions } = await useAsyncData<Mission[]>(
   `missions-of-${slug}`,
-  () => queryCollection('missions').where('experience', '=', slug).all() as Promise<Mission[]>,
+  () => $fetch<Mission[]>(`/api/v1/missions?experience=${slug}`),
   { default: () => [] }
 )
 
@@ -80,8 +80,8 @@ function typeLabel(type?: string) {
           </NuxtLink>
         </Button>
       </div>
-      <div v-if="experience?.body" class="mt-4 pt-4 border-t border-border prose prose-sm max-w-none text-sm text-muted-foreground">
-        <ContentRenderer :value="experience" />
+      <div v-if="experience?.body" class="mt-4 pt-4 border-t border-border text-sm text-muted-foreground whitespace-pre-wrap">
+        {{ experience.body }}
       </div>
     </div>
 

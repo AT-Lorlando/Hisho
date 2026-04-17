@@ -3,7 +3,7 @@ import type { Skill } from '~/types/content'
 
 definePageMeta({ layout: 'profile' })
 
-const { aggregated } = useAggregatedSkills()
+const { aggregated, refreshSkillDocs } = useAggregatedSkills()
 
 const documented = computed(() => aggregated.value.filter(e => e.documented))
 const undocumented = computed(() => aggregated.value.filter(e => !e.documented))
@@ -13,7 +13,7 @@ const { remove } = useContentFile('skills')
 async function handleDelete(slug: string) {
   if (!confirm('Supprimer cette compétence ?')) return
   await remove(slug)
-  await refreshNuxtData('agg-skill-docs')
+  await refreshSkillDocs()
 }
 </script>
 

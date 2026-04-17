@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: experience } = await useAsyncData<Experience>(
   `experience-${slug}`,
-  () => queryCollection('experiences').where('slug', '=', slug).first() as Promise<Experience>
+  () => $fetch<Experience>(`/api/v1/experiences/${slug}`)
 )
 
 if (!experience.value) {

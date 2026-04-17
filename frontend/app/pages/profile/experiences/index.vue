@@ -62,8 +62,8 @@ function typeLabel(type?: string) {
             <p v-if="exp.startDate" class="text-xs text-muted-foreground">
               {{ exp.startDate }} – {{ exp.endDate ?? 'en cours' }}
             </p>
-            <p v-if="exp.missions?.length" class="text-xs text-muted-foreground mt-1">
-              {{ exp.missions.length }} mission{{ exp.missions.length > 1 ? 's' : '' }}
+            <p v-if="exp.missionCount" class="text-xs text-muted-foreground mt-1">
+              {{ exp.missionCount }} mission{{ exp.missionCount! > 1 ? 's' : '' }}
             </p>
           </div>
         </div>

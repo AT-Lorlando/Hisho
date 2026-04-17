@@ -8,7 +8,7 @@ const slug = route.params.slug as string
 
 const { data: certification } = await useAsyncData<Certification>(
   `certification-${slug}`,
-  () => queryCollection('certifications').where('slug', '=', slug).first() as Promise<Certification>
+  () => $fetch<Certification>(`/api/v1/certifications/${slug}`)
 )
 
 if (!certification.value) await navigateTo('/profile/certifications')

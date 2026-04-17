@@ -11,7 +11,7 @@ const isCompiling = ref(false)
 const totalFiles = computed(() =>
   (counts.value?.experiences ?? 0) +
   (counts.value?.skills ?? 0) +
-  (counts.value?.projects ?? 0) +
+  (counts.value?.missions ?? 0) +
   (counts.value?.certifications ?? 0)
 )
 

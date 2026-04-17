@@ -75,8 +75,8 @@ const emit = defineEmits<{ delete: [slug: string] }>()
       </div>
 
       <!-- Body Markdown -->
-      <div v-if="body" class="prose prose-sm dark:prose-invert max-w-none">
-        <ContentRenderer :value="{ body }" />
+      <div v-if="body" class="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+        {{ body }}
       </div>
     </div>
   </div>

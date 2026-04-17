@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     asyncContext: true,
   },
   devtools: { enabled: true },
-  modules: ['@nuxt/content', '@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
   app: {
     pageTransition: { name: 'page', mode: 'out-in' }
   },

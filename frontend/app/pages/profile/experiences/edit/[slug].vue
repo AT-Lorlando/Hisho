@@ -18,8 +18,12 @@ if (!experience.value) {
 const { update, isLoading, error } = useContentFile('experiences')
 
 async function handleSubmit(data: ExperiencePayload) {
-  await update(slug, data)
-  await navigateTo(`/profile/experiences/${slug}`)
+  try {
+    await update(slug, data)
+    await navigateTo(`/profile/experiences/${slug}`)
+  } catch {
+    // error is already set in error.value by useContentFile
+  }
 }
 </script>
 

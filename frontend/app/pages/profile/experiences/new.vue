@@ -6,8 +6,12 @@ definePageMeta({ layout: 'profile' })
 const { create, isLoading, error } = useContentFile('experiences')
 
 async function handleSubmit(data: ExperiencePayload) {
-  await create(data)
-  await navigateTo('/profile/experiences')
+  try {
+    await create(data)
+    await navigateTo('/profile/experiences')
+  } catch {
+    // error is already set in error.value by useContentFile
+  }
 }
 </script>
 

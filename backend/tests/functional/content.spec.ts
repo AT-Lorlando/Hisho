@@ -28,24 +28,58 @@ test.group('ContentController', (group) => {
     response.assertStatus(401)
   })
 
-  test('POST /content/experiences creates a markdown file', async ({ client }) => {
+  test('POST /content/experiences creates an employer file', async ({ client }) => {
     const user = await createUser()
     const response = await client
       .post('/content/experiences')
       .loginAs(user)
       .json({
-        title: 'Dev TypeScript',
-        client: 'TestCorp',
-        role: 'Développeur',
-        startDate: '2024-01',
-        stack: ['TypeScript'],
-        tags: ['frontend'],
-        highlights: ['Built stuff'],
-        body: 'Description de la mission.',
+        title: 'Neverhack',
+        role: 'Ingénieur DevSecOps',
+        client: 'Airbus Defence and Space',
+        type: 'cdi',
+        startDate: '2023-01',
+        location: 'Toulouse',
+        missions: ['deploiement-siem-elk'],
+        body: 'Mission longue durée.',
       })
-
     response.assertStatus(201)
-    response.assertBodyContains({ slug: 'dev-typescript' })
+    response.assertBodyContains({ slug: 'neverhack' })
+  })
+
+  test('POST /content/missions creates a pro mission file', async ({ client }) => {
+    const user = await createUser()
+    const response = await client
+      .post('/content/missions')
+      .loginAs(user)
+      .json({
+        title: 'Déploiement SIEM ELK',
+        type: 'pro',
+        experience: 'neverhack',
+        client: 'Airbus Defence and Space',
+        domains: ['Cybersécurité', 'Infrastructure'],
+        skills: ['ELK Stack', 'Docker'],
+        startDate: '2023-06',
+        body: '25M logs/jour.',
+      })
+    response.assertStatus(201)
+    response.assertBodyContains({ slug: 'deploiement-siem-elk' })
+  })
+
+  test('POST /content/missions creates a perso mission file', async ({ client }) => {
+    const user = await createUser()
+    const response = await client
+      .post('/content/missions')
+      .loginAs(user)
+      .json({
+        title: 'Homelab Infrastructure',
+        type: 'perso',
+        domains: ['Infrastructure'],
+        skills: ['Docker', 'Ansible'],
+        body: 'Infra perso.',
+      })
+    response.assertStatus(201)
+    response.assertBodyContains({ slug: 'homelab-infrastructure' })
   })
 
   test('POST /content/:type returns 400 for invalid type', async ({ client }) => {
@@ -62,12 +96,7 @@ test.group('ContentController', (group) => {
     const response = await client
       .post('/content/domains')
       .loginAs(user)
-      .json({
-        title: 'Cybersécurité',
-        description: 'SOC, pentest, SIEM',
-        body: 'Domaine principal.',
-      })
-
+      .json({ title: 'Cybersécurité', description: 'SOC, pentest, SIEM', body: 'Domaine principal.' })
     response.assertStatus(201)
     response.assertBodyContains({ slug: 'cybersecurite' })
   })
@@ -75,28 +104,24 @@ test.group('ContentController', (group) => {
   test('PUT /content/:type/:slug updates existing file', async ({ client }) => {
     const user = await createUser()
     await client
-      .post('/content/skills')
+      .post('/content/missions')
       .loginAs(user)
-      .json({ title: 'TypeScript', category: 'Langage', level: 'expert', tags: [] })
-
+      .json({ title: 'Mission Test', type: 'perso', body: 'v1' })
     const response = await client
-      .put('/content/skills/typescript')
+      .put('/content/missions/mission-test')
       .loginAs(user)
-      .json({ title: 'TypeScript', category: 'Langage', level: 'avancé', tags: ['frontend'] })
-
+      .json({ title: 'Mission Test', type: 'perso', body: 'v2 updated' })
     response.assertStatus(200)
-    response.assertBodyContains({ slug: 'typescript' })
   })
 
   test('DELETE /content/:type/:slug removes file', async ({ client }) => {
     const user = await createUser()
     await client
-      .post('/content/projects')
+      .post('/content/missions')
       .loginAs(user)
-      .json({ title: 'Mon Projet', type: 'personnel', status: 'en-cours', stack: [], tags: [] })
-
+      .json({ title: 'Mission Delete', type: 'perso', body: '' })
     const response = await client
-      .delete('/content/projects/mon-projet')
+      .delete('/content/missions/mission-delete')
       .loginAs(user)
     response.assertStatus(204)
   })
@@ -104,7 +129,7 @@ test.group('ContentController', (group) => {
   test('DELETE /content/:type/:slug returns 404 for unknown slug', async ({ client }) => {
     const user = await createUser()
     const response = await client
-      .delete('/content/experiences/nonexistent-slug')
+      .delete('/content/missions/nonexistent-slug')
       .loginAs(user)
     response.assertStatus(404)
   })

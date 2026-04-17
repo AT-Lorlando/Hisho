@@ -7,8 +7,8 @@ const sections = [
   { label: 'Identité', path: '/profile/identity', icon: 'lucide:user', key: null },
   { label: 'Domaines', path: '/profile/domains', icon: 'lucide:layers', key: 'domains' as const },
   { label: 'Compétences', path: '/profile/skills', icon: 'lucide:zap', key: 'skills' as const },
-  { label: 'Expériences', path: '/profile/experiences', icon: 'lucide:briefcase', key: 'experiences' as const },
-  { label: 'Missions', path: '/profile/missions', icon: 'lucide:target', key: 'missions' as const },
+  { label: 'Expériences pro', path: '/profile/experiences', icon: 'lucide:briefcase', key: 'experiences' as const },
+  { label: 'Projets perso', path: '/profile/missions/perso', icon: 'lucide:target', key: 'missions' as const },
   { label: 'Certifications', path: '/profile/certifications', icon: 'lucide:award', key: 'certifications' as const },
 ]
 

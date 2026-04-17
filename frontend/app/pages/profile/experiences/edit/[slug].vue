@@ -19,7 +19,7 @@ const { update, isLoading, error } = useContentFile('experiences')
 
 async function handleSubmit(data: ExperiencePayload) {
   await update(slug, data)
-  await navigateTo('/profile/experiences')
+  await navigateTo(`/profile/experiences/${slug}`)
 }
 </script>
 
@@ -28,9 +28,11 @@ async function handleSubmit(data: ExperiencePayload) {
     <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-6">
       <NuxtLink to="/profile/identity" class="hover:text-foreground">Mon profil</NuxtLink>
       <span>/</span>
-      <NuxtLink to="/profile/experiences" class="hover:text-foreground">Expériences</NuxtLink>
+      <NuxtLink to="/profile/experiences" class="hover:text-foreground">Expériences pro</NuxtLink>
       <span>/</span>
-      <span class="text-foreground">{{ experience?.title }}</span>
+      <NuxtLink :to="`/profile/experiences/${slug}`" class="hover:text-foreground">{{ experience?.title }}</NuxtLink>
+      <span>/</span>
+      <span class="text-foreground">Modifier</span>
     </nav>
 
     <h1 class="text-2xl font-bold mb-6">Modifier l'expérience</h1>
@@ -40,7 +42,7 @@ async function handleSubmit(data: ExperiencePayload) {
     <ExperienceForm
       :initial="experience"
       @submit="handleSubmit"
-      @cancel="navigateTo('/profile/experiences')"
+      @cancel="navigateTo(`/profile/experiences/${slug}`)"
     />
   </div>
 </template>

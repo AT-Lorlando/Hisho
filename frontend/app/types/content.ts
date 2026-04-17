@@ -8,39 +8,42 @@ export interface Domain {
   body?: string
 }
 
+export interface Experience {
+  _path: string
+  slug: string
+  title: string
+  role?: string
+  client?: string
+  type?: 'cdi' | 'cdd' | 'freelance' | 'alternance' | 'stage'
+  startDate?: string
+  endDate?: string
+  location?: string
+  missions: string[]
+  aiSummary?: string
+  body?: string
+}
+
+export interface Mission {
+  _path: string
+  slug: string
+  title: string
+  type: 'pro' | 'perso'
+  experience?: string
+  client?: string
+  domains: string[]
+  skills: string[]
+  startDate?: string
+  endDate?: string
+  aiSummary?: string
+  body?: string
+}
+
 export interface Skill {
   _path: string
   slug: string
   title: string
   domain: string
   yearsOfExperience?: number
-  aiSummary?: string
-  body?: string
-}
-
-export interface Experience {
-  _path: string
-  slug: string
-  title: string
-  client: string
-  role: string
-  startDate: string
-  endDate?: string
-  location?: string
-  stack: string[]
-  highlights: string[]
-  aiSummary?: string
-  body?: string
-}
-
-export interface Project {
-  _path: string
-  slug: string
-  title: string
-  startDate?: string
-  endDate?: string
-  stack: string[]
-  url?: string
   aiSummary?: string
   body?: string
 }
@@ -75,12 +78,17 @@ export interface UserProfile {
   lastCompiledAt: string | null
 }
 
-export type ContentType = 'experiences' | 'skills' | 'projects' | 'certifications' | 'domains'
+export interface CompetencyRatings {
+  skills: Record<string, number>
+  domains: Record<string, number>
+}
+
+export type ContentType = 'experiences' | 'skills' | 'missions' | 'certifications' | 'domains'
 
 export interface ContentCounts {
   experiences: number
   skills: number
-  projects: number
+  missions: number
   certifications: number
   domains: number
 }
@@ -94,13 +102,25 @@ export interface DomainPayload {
 
 export interface ExperiencePayload {
   title: string
-  client: string
-  role: string
-  startDate: string
+  role?: string
+  client?: string
+  type?: 'cdi' | 'cdd' | 'freelance' | 'alternance' | 'stage'
+  startDate?: string
   endDate?: string
   location?: string
-  stack: string[]
-  highlights: string[]
+  missions?: string[]
+  body?: string
+}
+
+export interface MissionPayload {
+  title: string
+  type: 'pro' | 'perso'
+  experience?: string
+  client?: string
+  domains?: string[]
+  skills?: string[]
+  startDate?: string
+  endDate?: string
   body?: string
 }
 
@@ -108,15 +128,6 @@ export interface SkillPayload {
   title: string
   domain: string
   yearsOfExperience?: number
-  body?: string
-}
-
-export interface ProjectPayload {
-  title: string
-  startDate?: string
-  endDate?: string
-  stack: string[]
-  url?: string
   body?: string
 }
 

@@ -13,6 +13,9 @@ const sections = [
 ]
 
 function isActive(path: string) {
+  if (path === '/profile/missions/perso') {
+    return route.path.startsWith('/profile/missions')
+  }
   return route.path.startsWith(path)
 }
 </script>

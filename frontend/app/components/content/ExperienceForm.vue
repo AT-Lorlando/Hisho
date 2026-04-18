@@ -24,21 +24,21 @@ function handleSubmit() {
   <form class="space-y-4" @submit.prevent="handleSubmit">
     <div class="grid grid-cols-2 gap-4">
       <div class="space-y-1.5">
-        <Label for="title">Employeur *</Label>
-        <Input id="title" v-model="form.title" placeholder="Neverhack" required />
+        <Label for="exp-title">Employeur *</Label>
+        <Input id="exp-title" v-model="form.title" placeholder="Neverhack" required />
       </div>
       <div class="space-y-1.5">
-        <Label for="client">Client final (si ESN)</Label>
-        <Input id="client" v-model="form.client" placeholder="Airbus Defence and Space" />
+        <Label for="exp-client">Client final (si ESN)</Label>
+        <Input id="exp-client" v-model="form.client" placeholder="Airbus Defence and Space" />
       </div>
       <div class="space-y-1.5">
-        <Label for="role">Poste occupé</Label>
-        <Input id="role" v-model="form.role" placeholder="Ingénieur DevSecOps" />
+        <Label for="exp-role">Poste occupé</Label>
+        <Input id="exp-role" v-model="form.role" placeholder="Ingénieur DevSecOps" />
       </div>
       <div class="space-y-1.5">
-        <Label for="type">Type de contrat</Label>
+        <Label for="exp-type">Type de contrat</Label>
         <select
-          id="type"
+          id="exp-type"
           v-model="form.type"
           class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
@@ -51,25 +51,35 @@ function handleSubmit() {
         </select>
       </div>
       <div class="space-y-1.5">
-        <Label for="startDate">Début</Label>
-        <Input id="startDate" v-model="form.startDate" placeholder="2023-01" />
+        <Label for="exp-start">Début</Label>
+        <input
+          id="exp-start"
+          v-model="form.startDate"
+          type="month"
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
       </div>
       <div class="space-y-1.5">
-        <Label for="endDate">Fin (vide = en cours)</Label>
-        <Input id="endDate" v-model="form.endDate" placeholder="2025-06" />
+        <Label for="exp-end">Fin (vide = en cours)</Label>
+        <input
+          id="exp-end"
+          v-model="form.endDate"
+          type="month"
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
       </div>
       <div class="space-y-1.5 col-span-2">
-        <Label for="location">Localisation</Label>
-        <Input id="location" v-model="form.location" placeholder="Toulouse" />
+        <Label for="exp-location">Localisation</Label>
+        <Input id="exp-location" v-model="form.location" placeholder="Toulouse" />
       </div>
     </div>
 
     <div class="space-y-1.5">
-      <Label for="body">Contexte général (Markdown)</Label>
+      <Label for="exp-body">Contexte général</Label>
       <textarea
-        id="body"
+        id="exp-body"
         v-model="form.body"
-        rows="5"
+        rows="4"
         placeholder="Contexte de la mission longue durée, environnement, périmètre..."
         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none font-mono"
       />
@@ -77,7 +87,7 @@ function handleSubmit() {
 
     <div class="flex justify-end gap-3">
       <Button type="button" variant="outline" @click="emit('cancel')">Annuler</Button>
-      <Button type="submit">Sauvegarder → MD</Button>
+      <Button type="submit">Sauvegarder</Button>
     </div>
   </form>
 </template>

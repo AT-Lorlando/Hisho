@@ -10,9 +10,10 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const inputVal = ref('')
 
 function addTag() {
-  const trimmed = inputVal.value.trim().replace(/,$/, '')
-  if (trimmed && !props.modelValue.includes(trimmed)) {
-    emit('update:modelValue', [...props.modelValue, trimmed])
+  const parts = inputVal.value.split(',').map(s => s.trim()).filter(Boolean)
+  const newTags = parts.filter(p => !props.modelValue.includes(p))
+  if (newTags.length) {
+    emit('update:modelValue', [...props.modelValue, ...newTags])
   }
   inputVal.value = ''
 }
@@ -40,7 +41,7 @@ function handleKeydown(e: KeyboardEvent) {
   >
     <span
       v-for="(tag, i) in modelValue"
-      :key="tag"
+      :key="`${i}-${tag}`"
       class="inline-flex items-center gap-1 bg-primary/10 text-primary rounded px-2 py-0.5 text-xs font-medium"
     >
       {{ tag }}

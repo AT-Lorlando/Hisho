@@ -11,19 +11,21 @@ test.group('MissionsController', (group) => {
   }
 
   async function createExperience() {
-    return Experience.create({ slug: 'neverhack', title: 'Neverhack' })
+    const slug = `testexp-${Date.now()}`
+    const exp = await Experience.create({ slug, title: `TestExp ${Date.now()}` })
+    return { slug, exp }
   }
 
   test('POST /missions creates a pro mission linked to experience', async ({ client }) => {
     const user = await createUser()
-    await createExperience()
+    const { slug: expSlug } = await createExperience()
     const response = await client
       .post('/missions')
       .loginAs(user)
       .json({
         title: 'Déploiement SIEM ELK',
         type: 'pro',
-        experience: 'neverhack',
+        experience: expSlug,
         domains: ['Cybersécurité'],
         skills: ['ELK Stack', 'Docker'],
         startDate: '2023-06',
@@ -57,28 +59,28 @@ test.group('MissionsController', (group) => {
     assert,
   }) => {
     const user = await createUser()
-    await createExperience()
+    const { slug: expSlug } = await createExperience()
     await client
       .post('/missions')
       .loginAs(user)
-      .json({ title: 'Mission 1', type: 'pro', experience: 'neverhack' })
-    const response = await client.get('/missions?experience=neverhack').loginAs(user)
+      .json({ title: 'Mission 1', type: 'pro', experience: expSlug })
+    const response = await client.get(`/missions?experience=${expSlug}`).loginAs(user)
     response.assertStatus(200)
     const body = response.body() as any[]
     assert.isArray(body)
-    assert.isTrue(body.every((m: any) => m.experience === 'neverhack'))
+    assert.isTrue(body.every((m: any) => m.experience === expSlug))
   })
 
   test('GET /missions/:slug returns experience as slug string', async ({ client }) => {
     const user = await createUser()
-    await createExperience()
+    const { slug: expSlug } = await createExperience()
     await client
       .post('/missions')
       .loginAs(user)
-      .json({ title: 'SIEM ELK', type: 'pro', experience: 'neverhack' })
+      .json({ title: 'SIEM ELK', type: 'pro', experience: expSlug })
     const response = await client.get('/missions/siem-elk').loginAs(user)
     response.assertStatus(200)
-    response.assertBodyContains({ experience: 'neverhack' })
+    response.assertBodyContains({ experience: expSlug })
   })
 
   test('DELETE /missions/:slug deletes mission', async ({ client }) => {

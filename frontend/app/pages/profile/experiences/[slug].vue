@@ -1,5 +1,6 @@
+<!-- frontend/app/pages/profile/experiences/[slug].vue -->
 <script setup lang="ts">
-import type { Experience, Mission } from '~/types/content'
+import type { Experience, Mission, MissionPayload } from '~/types/content'
 
 definePageMeta({ layout: 'profile' })
 
@@ -21,7 +22,37 @@ const { data: missions, refresh: refreshMissions } = await useAsyncData<Mission[
   { default: () => [] }
 )
 
-const { remove: removeMission } = useContentFile('missions')
+const { create: createMission, update: updateMission, remove: removeMission } = useContentFile('missions')
+
+const isAddingMission = ref(false)
+const editingMissionSlug = ref<string | null>(null)
+
+function startAddMission() {
+  editingMissionSlug.value = null
+  isAddingMission.value = true
+}
+
+function startEditMission(mslug: string) {
+  isAddingMission.value = false
+  editingMissionSlug.value = mslug
+}
+
+function closeMissionForm() {
+  isAddingMission.value = false
+  editingMissionSlug.value = null
+}
+
+async function handleCreateMission(data: MissionPayload) {
+  await createMission({ ...data, experience: slug, type: 'pro' })
+  await refreshMissions()
+  closeMissionForm()
+}
+
+async function handleUpdateMission(mslug: string, data: MissionPayload) {
+  await updateMission(mslug, data)
+  await refreshMissions()
+  closeMissionForm()
+}
 
 async function handleDeleteMission(mslug: string) {
   if (!confirm('Supprimer cette mission ?')) return
@@ -74,11 +105,9 @@ function typeLabel(type?: string) {
             </span>
           </div>
         </div>
-        <Button as-child size="sm" variant="outline">
-          <NuxtLink :to="`/profile/experiences/edit/${slug}`">
-            <Icon name="lucide:pencil" class="w-3.5 h-3.5 mr-1" /> Modifier
-          </NuxtLink>
-        </Button>
+        <NuxtLink to="/profile/experiences" class="text-sm text-muted-foreground hover:text-foreground">
+          <Icon name="lucide:arrow-left" class="w-4 h-4 inline mr-1" />Retour
+        </NuxtLink>
       </div>
       <div v-if="experience?.body" class="mt-4 pt-4 border-t border-border text-sm text-muted-foreground whitespace-pre-wrap">
         {{ experience.body }}
@@ -88,63 +117,82 @@ function typeLabel(type?: string) {
     <!-- Section missions -->
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-semibold text-lg">Missions</h2>
-      <Button as-child size="sm">
-        <NuxtLink :to="`/profile/missions/new?experience=${slug}&type=pro`">
-          <Icon name="lucide:plus" class="w-4 h-4 mr-1" /> Ajouter une mission
-        </NuxtLink>
+      <Button v-if="!isAddingMission" size="sm" @click="startAddMission">
+        <Icon name="lucide:plus" class="w-4 h-4 mr-1" /> Ajouter une mission
       </Button>
     </div>
 
-    <div v-if="!missions?.length" class="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-lg">
-      Aucune mission encore pour cette expérience.
-      <NuxtLink :to="`/profile/missions/new?experience=${slug}&type=pro`" class="text-primary underline ml-1">
-        Ajouter la première
-      </NuxtLink>
+    <div v-if="!missions?.length && !isAddingMission" class="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-lg mb-3">
+      Aucune mission encore.
+      <button class="text-primary underline ml-1" @click="startAddMission">Ajouter la première</button>
     </div>
 
     <div class="space-y-3">
-      <div
-        v-for="mission in missions"
-        :key="mission.slug"
-        class="border border-border rounded-lg p-4 group hover:bg-accent/20 transition-colors"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0 flex-1">
-            <h3 class="font-medium text-sm">{{ mission.title }}</h3>
-            <p v-if="mission.startDate" class="text-xs text-muted-foreground mt-0.5">
-              {{ mission.startDate }} – {{ mission.endDate ?? 'en cours' }}
-            </p>
-            <div v-if="mission.domains?.length || mission.skills?.length" class="flex flex-wrap gap-1 mt-2">
-              <span
-                v-for="d in mission.domains"
-                :key="`d-${d}`"
-                class="text-xs bg-blue-500/10 text-blue-600 rounded px-1.5 py-0.5"
-              >{{ d }}</span>
-              <span
-                v-for="s in mission.skills"
-                :key="`s-${s}`"
-                class="text-xs bg-muted text-muted-foreground rounded px-1.5 py-0.5"
-              >{{ s }}</span>
+      <template v-for="mission in missions" :key="mission.slug">
+        <!-- Mode édition inline -->
+        <div v-if="editingMissionSlug === mission.slug" class="border border-primary/40 rounded-lg p-5 bg-accent/10">
+          <h3 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Modifier la mission</h3>
+          <ContentMissionForm
+            :initial="mission"
+            :experience-slug="slug"
+            @submit="(d) => handleUpdateMission(mission.slug, d)"
+            @cancel="closeMissionForm"
+          />
+        </div>
+
+        <!-- Mode lecture -->
+        <div
+          v-else
+          class="border border-border rounded-lg p-4 group hover:bg-accent/20 transition-colors"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <h3 class="font-medium text-sm">{{ mission.title }}</h3>
+              <p v-if="mission.startDate" class="text-xs text-muted-foreground mt-0.5">
+                {{ mission.startDate }} – {{ mission.endDate ?? 'en cours' }}
+              </p>
+              <div v-if="mission.domains?.length || mission.skills?.length" class="flex flex-wrap gap-1 mt-2">
+                <span
+                  v-for="d in mission.domains"
+                  :key="`d-${d}`"
+                  class="text-xs bg-blue-500/10 text-blue-600 rounded px-1.5 py-0.5"
+                >{{ d }}</span>
+                <span
+                  v-for="s in mission.skills"
+                  :key="`s-${s}`"
+                  class="text-xs bg-muted text-muted-foreground rounded px-1.5 py-0.5"
+                >{{ s }}</span>
+              </div>
+              <p v-if="mission.body" class="text-xs text-muted-foreground mt-2 line-clamp-2">{{ mission.body }}</p>
             </div>
-            <p v-if="mission.body" class="text-xs text-muted-foreground mt-2 line-clamp-2">{{ mission.body }}</p>
-          </div>
-          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <Button
-              size="sm" variant="ghost"
-              class="h-7 px-2 text-muted-foreground"
-              @click="navigateTo(`/profile/missions/edit/${mission.slug}`)"
-            >
-              <Icon name="lucide:pencil" class="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              size="sm" variant="ghost"
-              class="h-7 px-2 text-destructive"
-              @click="handleDeleteMission(mission.slug)"
-            >
-              <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
-            </Button>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <Button
+                size="sm" variant="ghost"
+                class="h-7 px-2 text-muted-foreground"
+                @click="startEditMission(mission.slug)"
+              >
+                <Icon name="lucide:pencil" class="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                size="sm" variant="ghost"
+                class="h-7 px-2 text-destructive"
+                @click="handleDeleteMission(mission.slug)"
+              >
+                <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
+      </template>
+
+      <!-- Formulaire d'ajout inline (après la liste) -->
+      <div v-if="isAddingMission" class="border border-primary/40 rounded-lg p-5 bg-accent/10">
+        <h3 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Nouvelle mission</h3>
+        <ContentMissionForm
+          :experience-slug="slug"
+          @submit="handleCreateMission"
+          @cancel="closeMissionForm"
+        />
       </div>
     </div>
   </div>

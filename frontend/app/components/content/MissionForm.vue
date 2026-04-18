@@ -22,7 +22,17 @@ const form = reactive<MissionPayload>({
 
 watch(
   () => props.experienceSlug,
-  (val) => { if (val) form.experience = val },
+  (val) => { form.experience = val ?? '' },
+)
+
+watch(
+  () => form.type,
+  (val) => {
+    if (val === 'perso') {
+      form.experience = ''
+      form.client = ''
+    }
+  },
 )
 
 function handleSubmit() {

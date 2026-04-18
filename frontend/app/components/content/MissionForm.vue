@@ -1,28 +1,32 @@
+<!-- frontend/app/components/content/MissionForm.vue -->
 <script setup lang="ts">
 import type { Mission, MissionPayload } from '~/types/content'
 
-const props = defineProps<{ initial?: Mission | null }>()
+const props = defineProps<{
+  initial?: Mission | null
+  experienceSlug?: string
+}>()
 const emit = defineEmits<{ submit: [data: MissionPayload]; cancel: [] }>()
 
 const form = reactive<MissionPayload>({
   title: props.initial?.title ?? '',
   type: props.initial?.type ?? 'pro',
-  experience: props.initial?.experience ?? '',
+  experience: props.experienceSlug ?? props.initial?.experience ?? '',
   client: props.initial?.client ?? '',
   startDate: props.initial?.startDate ?? '',
   endDate: props.initial?.endDate ?? '',
+  domains: [...(props.initial?.domains ?? [])],
+  skills: [...(props.initial?.skills ?? [])],
   body: props.initial?.body ?? '',
 })
 
-const domainsInput = ref((props.initial?.domains ?? []).join(', '))
-const skillsInput = ref((props.initial?.skills ?? []).join(', '))
+watch(
+  () => props.experienceSlug,
+  (val) => { if (val) form.experience = val },
+)
 
 function handleSubmit() {
-  const payload: MissionPayload = {
-    ...form,
-    domains: domainsInput.value.split(',').map(s => s.trim()).filter(Boolean),
-    skills: skillsInput.value.split(',').map(s => s.trim()).filter(Boolean),
-  }
+  const payload: MissionPayload = { ...form }
   if (payload.type === 'perso') {
     delete payload.experience
     delete payload.client
@@ -35,13 +39,13 @@ function handleSubmit() {
   <form class="space-y-4" @submit.prevent="handleSubmit">
     <div class="grid grid-cols-2 gap-4">
       <div class="space-y-1.5">
-        <Label for="title">Titre de la mission *</Label>
-        <Input id="title" v-model="form.title" placeholder="Déploiement SIEM ELK" required />
+        <Label for="ms-title">Titre *</Label>
+        <Input id="ms-title" v-model="form.title" placeholder="Déploiement SIEM ELK" required />
       </div>
       <div class="space-y-1.5">
-        <Label for="type">Type</Label>
+        <Label for="ms-type">Type</Label>
         <select
-          id="type"
+          id="ms-type"
           v-model="form.type"
           class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
@@ -51,50 +55,60 @@ function handleSubmit() {
       </div>
 
       <template v-if="form.type === 'pro'">
-        <div class="space-y-1.5">
-          <Label for="experience">Slug de l'expérience parente</Label>
-          <Input id="experience" v-model="form.experience" placeholder="neverhack" />
+        <div v-if="!experienceSlug" class="space-y-1.5">
+          <Label for="ms-experience">Expérience parente (slug)</Label>
+          <Input id="ms-experience" v-model="form.experience" placeholder="neverhack" />
         </div>
-        <div class="space-y-1.5">
-          <Label for="client">Client final</Label>
-          <Input id="client" v-model="form.client" placeholder="Airbus Defence and Space" />
+        <div class="space-y-1.5" :class="experienceSlug ? 'col-span-2' : ''">
+          <Label for="ms-client">Client final</Label>
+          <Input id="ms-client" v-model="form.client" placeholder="Airbus Defence and Space" />
         </div>
       </template>
 
       <div class="space-y-1.5">
-        <Label for="startDate">Début</Label>
-        <Input id="startDate" v-model="form.startDate" placeholder="2023-06" />
+        <Label for="ms-start">Début</Label>
+        <input
+          id="ms-start"
+          v-model="form.startDate"
+          type="month"
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
       </div>
       <div class="space-y-1.5">
-        <Label for="endDate">Fin (vide = en cours)</Label>
-        <Input id="endDate" v-model="form.endDate" placeholder="2024-01" />
+        <Label for="ms-end">Fin (vide = en cours)</Label>
+        <input
+          id="ms-end"
+          v-model="form.endDate"
+          type="month"
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        />
       </div>
     </div>
 
     <div class="space-y-1.5">
-      <Label for="domains">Domaines (séparés par virgule)</Label>
-      <Input id="domains" v-model="domainsInput" placeholder="Cybersécurité, Infrastructure" />
+      <Label>Domaines</Label>
+      <TagInput v-model="form.domains" placeholder="Ajouter un domaine (Entrée ou virgule)..." />
     </div>
 
     <div class="space-y-1.5">
-      <Label for="skills">Compétences (séparées par virgule)</Label>
-      <Input id="skills" v-model="skillsInput" placeholder="ELK Stack, Docker, Python" />
+      <Label>Compétences</Label>
+      <TagInput v-model="form.skills" placeholder="Ajouter une compétence (Entrée ou virgule)..." />
     </div>
 
     <div class="space-y-1.5">
-      <Label for="body">Description (Markdown)</Label>
+      <Label for="ms-body">Description</Label>
       <textarea
-        id="body"
+        id="ms-body"
         v-model="form.body"
-        rows="6"
-        placeholder="Description brute et factuelle. Contexte, chiffres, ce qui distingue..."
+        rows="5"
+        placeholder="Contexte, chiffres, ce qui distingue..."
         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none font-mono"
       />
     </div>
 
     <div class="flex justify-end gap-3">
       <Button type="button" variant="outline" @click="emit('cancel')">Annuler</Button>
-      <Button type="submit">Sauvegarder → MD</Button>
+      <Button type="submit">Sauvegarder</Button>
     </div>
   </form>
 </template>

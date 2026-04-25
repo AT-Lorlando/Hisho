@@ -26,8 +26,8 @@ test.group('MissionsController', (group) => {
         title: 'Déploiement SIEM ELK',
         type: 'pro',
         experience: expSlug,
-        domains: ['Cybersécurité'],
-        skills: ['ELK Stack', 'Docker'],
+        domains: [{ name: 'Cybersécurité', level: 3 }],
+        skills: [{ name: 'ELK Stack', level: 4 }, { name: 'Docker', level: 3 }],
         startDate: '2023-06',
       })
     response.assertStatus(201)
@@ -36,21 +36,29 @@ test.group('MissionsController', (group) => {
 
   test('POST /missions creates a perso mission without experience', async ({ client }) => {
     const user = await createUser()
+    const uniqueTitle = `Homelab-${Date.now()}`
     const response = await client
       .post('/missions')
       .loginAs(user)
-      .json({ title: 'Homelab', type: 'perso', domains: ['Infrastructure'], skills: ['Docker'] })
+      .json({
+        title: uniqueTitle,
+        type: 'perso',
+        domains: [{ name: 'Infrastructure', level: 3 }],
+        skills: [{ name: 'Docker', level: 3 }],
+      })
     response.assertStatus(201)
-    response.assertBodyContains({ slug: 'homelab' })
+    response.assertBodyContains({ slug: response.body().slug })
   })
 
   test('GET /missions?type=perso returns only perso missions', async ({ client, assert }) => {
     const user = await createUser()
-    await client.post('/missions').loginAs(user).json({ title: 'Perso Project', type: 'perso' })
+    const postRes = await client.post('/missions').loginAs(user).json({ title: 'Perso Project', type: 'perso' })
+    postRes.assertStatus(201)
     const response = await client.get('/missions?type=perso').loginAs(user)
     response.assertStatus(200)
     const body = response.body() as any[]
     assert.isArray(body)
+    assert.isAbove(body.length, 0)
     assert.isTrue(body.every((m: any) => m.type === 'perso'))
   })
 
@@ -60,14 +68,16 @@ test.group('MissionsController', (group) => {
   }) => {
     const user = await createUser()
     const { slug: expSlug } = await createExperience()
-    await client
+    const postRes = await client
       .post('/missions')
       .loginAs(user)
       .json({ title: 'Mission 1', type: 'pro', experience: expSlug })
+    postRes.assertStatus(201)
     const response = await client.get(`/missions?experience=${expSlug}`).loginAs(user)
     response.assertStatus(200)
     const body = response.body() as any[]
     assert.isArray(body)
+    assert.isAbove(body.length, 0)
     assert.isTrue(body.every((m: any) => m.experience === expSlug))
   })
 
@@ -88,5 +98,40 @@ test.group('MissionsController', (group) => {
     await client.post('/missions').loginAs(user).json({ title: 'To Delete', type: 'perso' })
     const response = await client.delete('/missions/to-delete').loginAs(user)
     response.assertStatus(204)
+  })
+
+  test('GET /missions/:slug returns persisted SkillEntry domains and skills', async ({ client }) => {
+    const user = await createUser()
+    const { slug: expSlug } = await createExperience()
+    const postRes = await client
+      .post('/missions')
+      .loginAs(user)
+      .json({
+        title: 'Round Trip Test',
+        type: 'pro',
+        experience: expSlug,
+        domains: [{ name: 'Cybersécurité', level: 3 }],
+        skills: [{ name: 'ELK Stack', level: 4 }, { name: 'Docker', level: 3 }],
+      })
+    postRes.assertStatus(201)
+    const response = await client.get('/missions/round-trip-test').loginAs(user)
+    response.assertStatus(200)
+    response.assertBodyContains({
+      domains: [{ name: 'Cybersécurité', level: 3 }],
+      skills: [{ name: 'ELK Stack', level: 4 }, { name: 'Docker', level: 3 }],
+    })
+  })
+
+  test('POST /missions rejects SkillEntry with invalid level', async ({ client }) => {
+    const user = await createUser()
+    const response = await client
+      .post('/missions')
+      .loginAs(user)
+      .json({
+        title: 'Bad Level',
+        type: 'perso',
+        domains: [{ name: 'Cybersécurité', level: 6 }],
+      })
+    response.assertStatus(422)
   })
 })

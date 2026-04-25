@@ -16,7 +16,11 @@ const open = ref(false)
 
 const calendarValue = computed<DateValue | undefined>(() => {
   if (!props.modelValue) return undefined
-  const [year, month] = props.modelValue.split('-').map(Number)
+  const match = props.modelValue.match(/^(\d{4})-(\d{2})$/)
+  if (!match) return undefined
+  const year = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10)
+  if (month < 1 || month > 12) return undefined
   return new CalendarDate(year, month, 1)
 })
 
@@ -47,12 +51,15 @@ function clear(e: Event) {
         <span class="flex-1">
           {{ calendarValue ? df.format(calendarValue.toDate(getLocalTimeZone())) : (placeholder ?? 'Sélectionner un mois') }}
         </span>
-        <Icon
+        <button
           v-if="modelValue"
-          name="lucide:x"
-          class="h-3 w-3 text-muted-foreground hover:text-foreground"
+          type="button"
+          class="ml-1 h-3 w-3 text-muted-foreground hover:text-foreground focus:outline-none rounded"
+          aria-label="Effacer"
           @click.stop="clear"
-        />
+        >
+          <Icon name="lucide:x" class="h-full w-full" />
+        </button>
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0" align="start">

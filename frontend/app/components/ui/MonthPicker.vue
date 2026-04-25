@@ -40,35 +40,37 @@ function clear(e: Event) {
 </script>
 
 <template>
-  <Popover v-model:open="open">
-    <PopoverTrigger as-child>
-      <Button
-        type="button"
-        variant="outline"
-        :class="['w-full justify-start text-left font-normal', !modelValue && 'text-muted-foreground']"
-      >
-        <Icon name="lucide:calendar" class="mr-2 h-4 w-4 shrink-0" />
-        <span class="flex-1">
-          {{ calendarValue ? df.format(calendarValue.toDate(getLocalTimeZone())) : (placeholder ?? 'Sélectionner un mois') }}
-        </span>
-        <button
-          v-if="modelValue"
+  <div class="relative">
+    <Popover v-model:open="open">
+      <PopoverTrigger as-child>
+        <Button
           type="button"
-          class="ml-1 h-3 w-3 text-muted-foreground hover:text-foreground focus:outline-none rounded"
-          aria-label="Effacer"
-          @click.stop="clear"
+          variant="outline"
+          :class="['w-full justify-start text-left font-normal', !modelValue ? 'text-muted-foreground pr-3' : 'pr-8']"
         >
-          <Icon name="lucide:x" class="h-full w-full" />
-        </button>
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0" align="start">
-      <Calendar
-        :model-value="calendarValue"
-        layout="month-and-year"
-        initial-focus
-        @update:model-value="onSelect"
-      />
-    </PopoverContent>
-  </Popover>
+          <Icon name="lucide:calendar" class="mr-2 h-4 w-4 shrink-0" />
+          <span class="flex-1 truncate">
+            {{ calendarValue ? df.format(calendarValue.toDate(getLocalTimeZone())) : (placeholder ?? 'Sélectionner un mois') }}
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent class="w-auto p-0" align="start">
+        <Calendar
+          :model-value="calendarValue"
+          layout="month-and-year"
+          initial-focus
+          @update:model-value="onSelect"
+        />
+      </PopoverContent>
+    </Popover>
+    <button
+      v-if="modelValue"
+      type="button"
+      class="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none rounded"
+      aria-label="Effacer"
+      @click="clear"
+    >
+      <Icon name="lucide:x" class="h-3 w-3" />
+    </button>
+  </div>
 </template>

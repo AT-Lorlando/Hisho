@@ -98,7 +98,7 @@ function missionBarStyle(m: Mission): Record<string, string> {
 </script>
 
 <template>
-  <div v-if="bounds" class="mb-8 rounded-xl border border-border bg-card p-4 overflow-x-auto">
+  <div v-if="bounds && bounds.max > bounds.min" class="mb-8 rounded-xl border border-border bg-card p-4 overflow-x-auto">
     <h2 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Timeline</h2>
 
     <!-- X axis — year labels -->
@@ -106,7 +106,7 @@ function missionBarStyle(m: Mission): Record<string, string> {
       <span
         v-for="m in yearMarkers"
         :key="m.year"
-        class="absolute text-xs text-muted-foreground -translate-x-1/2 bottom-1"
+        class="absolute text-xs text-muted-foreground bottom-1"
         :style="{ left: m.left + '%' }"
       >
         {{ m.year }}

@@ -1,3 +1,8 @@
+export interface SkillEntry {
+  name: string
+  level: 1 | 2 | 3 | 4 | 5
+}
+
 export interface Domain {
   id?: number
   slug: string
@@ -30,8 +35,8 @@ export interface Mission {
   type: 'pro' | 'perso'
   experience?: string
   client?: string
-  domains: string[]
-  skills: string[]
+  domains: SkillEntry[]
+  skills: SkillEntry[]
   startDate?: string
   endDate?: string
   aiSummary?: string
@@ -42,7 +47,8 @@ export interface Skill {
   id?: number
   slug: string
   title: string
-  domain: string
+  domain: { slug: string; title: string } | null
+  level?: number | null
   yearsOfExperience?: number
   aiSummary?: string
   body?: string
@@ -116,8 +122,8 @@ export interface MissionPayload {
   type: 'pro' | 'perso'
   experience?: string
   client?: string
-  domains?: string[]
-  skills?: string[]
+  domains?: SkillEntry[]
+  skills?: SkillEntry[]
   startDate?: string
   endDate?: string
   body?: string
@@ -125,7 +131,8 @@ export interface MissionPayload {
 
 export interface SkillPayload {
   title: string
-  domain: string
+  domainSlug?: string
+  level?: number
   yearsOfExperience?: number
   body?: string
 }
@@ -139,4 +146,53 @@ export interface CertificationPayload {
   url?: string
   tags: string[]
   body?: string
+}
+
+export interface ProfilePayload {
+  fullName?: string
+  title?: string
+  bio?: string
+  location?: string
+  phone?: string
+  availability?: string
+  dailyRate?: string
+  linkedinUrl?: string
+  githubUrl?: string
+  websiteUrl?: string
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface ExtractedMission {
+  title: string
+  client?: string | null
+  startDate?: string | null
+  endDate?: string | null
+  domains: SkillEntry[]
+  skills: SkillEntry[]
+  body?: string | null
+}
+
+export interface ExtractedExperience {
+  title: string
+  role?: string | null
+  client?: string | null
+  type?: 'cdi' | 'cdd' | 'freelance' | 'alternance' | 'stage'
+  startDate?: string | null
+  endDate?: string | null
+  body?: string | null
+  missions?: ExtractedMission[]
+}
+
+export interface ExtractedProfile {
+  experiences?: ExtractedExperience[]
+  missions?: ExtractedMission[]
+}
+
+export interface ImportResult {
+  created: string[]
+  errors: string[]
 }

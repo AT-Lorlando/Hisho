@@ -4,12 +4,12 @@ const counts = useContentCounts()
 const { user, logout } = useAuth()
 
 const sections = [
-  { label: 'Identité', path: '/profile/identity', icon: 'lucide:user', key: null },
-  { label: 'Domaines', path: '/profile/domains', icon: 'lucide:layers', key: 'domains' as const },
-  { label: 'Compétences', path: '/profile/skills', icon: 'lucide:zap', key: 'skills' as const },
-  { label: 'Expériences pro', path: '/profile/experiences', icon: 'lucide:briefcase', key: 'experiences' as const },
-  { label: 'Projets perso', path: '/profile/missions/perso', icon: 'lucide:target', key: 'missions' as const },
-  { label: 'Certifications', path: '/profile/certifications', icon: 'lucide:award', key: 'certifications' as const },
+  { label: 'Identité',        path: '/profile/identity',       icon: 'lucide:user',      key: null as null },
+  { label: 'Domaines',        path: '/profile/domains',        icon: 'lucide:layers',    key: 'domains' as const },
+  { label: 'Compétences',     path: '/profile/skills',         icon: 'lucide:zap',       key: 'skills' as const },
+  { label: 'Expériences pro', path: '/profile/experiences',    icon: 'lucide:briefcase', key: 'experiences' as const },
+  { label: 'Projets perso',   path: '/profile/missions/perso', icon: 'lucide:target',    key: 'missions' as const },
+  { label: 'Certifications',  path: '/profile/certifications', icon: 'lucide:award',     key: 'certifications' as const },
 ]
 
 function isActive(path: string) {
@@ -24,7 +24,7 @@ function isActive(path: string) {
   <nav class="w-52 shrink-0 border-r border-border bg-background flex flex-col">
     <!-- Header -->
     <div class="px-4 py-4 border-b border-border">
-      <NuxtLink to="/profile" class="text-lg font-bold tracking-tight hover:opacity-80 transition-opacity">
+      <NuxtLink to="/profile/experiences" class="text-lg font-bold tracking-tight hover:opacity-80 transition-opacity">
         Hisho
       </NuxtLink>
     </div>

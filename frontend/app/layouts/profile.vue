@@ -4,5 +4,7 @@
     <main class="flex-1 overflow-auto">
       <slot />
     </main>
+    <AiProfileChat />
+    <AiFloatingButton />
   </div>
 </template>

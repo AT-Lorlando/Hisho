@@ -1,106 +1,112 @@
 <script setup lang="ts">
-import type { Skill } from '~/types/content'
+import type { Domain, Skill, SkillPayload } from '~/types/content'
 
 definePageMeta({ layout: 'profile' })
 
-const { aggregated, refreshSkillDocs } = useAggregatedSkills()
+const { items: skills, refresh: refreshSkills } = useContent<Skill>('skills')
+const { items: domains, refresh: refreshDomains } = useContent<Domain>('domains')
+const { create, update, remove } = useContentFile('skills')
 
-const documented = computed(() => aggregated.value.filter(e => e.documented))
-const undocumented = computed(() => aggregated.value.filter(e => !e.documented))
+const isCreating = ref(false)
+const editingSlug = ref<string | null>(null)
 
-const { remove } = useContentFile('skills')
+const grouped = computed(() => {
+  const map: Record<string, Skill[]> = {}
+  for (const s of skills.value ?? []) {
+    const key = s.domain?.title ?? 'Sans domaine'
+    if (!map[key]) map[key] = []
+    map[key].push(s)
+  }
+  return map
+})
+
+function startCreate() {
+  editingSlug.value = null
+  isCreating.value = true
+}
+
+function startEdit(slug: string) {
+  isCreating.value = false
+  editingSlug.value = slug
+}
+
+async function handleCreate(data: SkillPayload) {
+  await create(data)
+  await refreshSkills()
+  isCreating.value = false
+}
+
+async function handleUpdate(slug: string, data: SkillPayload) {
+  await update(slug, data)
+  await refreshSkills()
+  editingSlug.value = null
+}
 
 async function handleDelete(slug: string) {
   if (!confirm('Supprimer cette compétence ?')) return
   await remove(slug)
-  await refreshSkillDocs()
+  await refreshSkills()
 }
+
+async function handleDomainCreated() {
+  await refreshDomains()
+}
+
 </script>
 
 <template>
-  <div class="p-8 max-w-4xl">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">Compétences</h1>
-      <Button as-child size="sm">
-        <NuxtLink to="/profile/skills/new">
-          <Icon name="lucide:plus" class="w-4 h-4 mr-1" /> Nouvelle compétence
-        </NuxtLink>
-      </Button>
+  <div class="p-8 max-w-3xl space-y-6">
+    <h1 class="text-2xl font-bold mb-2">Compétences</h1>
+
+    <!-- Grouped by domain -->
+    <div v-for="(domainSkills, domainName) in grouped" :key="domainName" class="space-y-1">
+      <div class="flex items-center gap-2 mb-2">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{{ domainName }}</h2>
+        <span class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5">{{ domainSkills.length }}</span>
+      </div>
+
+      <template v-for="skill in domainSkills" :key="skill.slug">
+        <!-- Inline edit form -->
+        <div v-if="editingSlug === skill.slug" class="border border-primary/40 rounded-xl p-4 bg-accent/10">
+          <SkillsSkillForm
+            :initial="skill"
+            :domains="domains ?? []"
+            @submit="(d) => handleUpdate(skill.slug, d)"
+            @cancel="editingSlug = null"
+            @domain-created="handleDomainCreated"
+          />
+        </div>
+        <SkillsSkillRow
+          v-else
+          :skill="skill"
+          @edit="startEdit(skill.slug)"
+          @delete="handleDelete(skill.slug)"
+        />
+      </template>
     </div>
 
-    <!-- Compétences documentées -->
-    <section v-if="documented.length" class="mb-8">
-      <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-        Documentées ({{ documented.length }})
-      </h2>
-      <div class="space-y-2">
-        <div
-          v-for="entry in documented"
-          :key="entry.slug"
-          class="border border-border rounded-lg px-4 py-3 flex items-center justify-between gap-3 group hover:bg-accent/20 transition-colors"
-        >
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-medium text-sm">{{ entry.name }}</span>
-              <span class="text-xs bg-green-500/10 text-green-600 rounded px-1.5 py-0.5 font-medium">Documenté</span>
-              <span v-if="(entry.metadata as Skill)?.domain" class="text-xs text-muted-foreground">
-                {{ (entry.metadata as Skill).domain }}
-              </span>
-              <span v-if="(entry.metadata as Skill)?.yearsOfExperience" class="text-xs text-muted-foreground">
-                · {{ (entry.metadata as Skill).yearsOfExperience }} ans
-              </span>
-              <span v-if="entry.missionCount > 0" class="text-xs text-muted-foreground">
-                · {{ entry.missionCount }} mission{{ entry.missionCount > 1 ? 's' : '' }}
-              </span>
-            </div>
-          </div>
-          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <Button size="sm" variant="ghost" class="h-7 px-2 text-muted-foreground" as-child>
-              <NuxtLink :to="`/profile/skills/edit/${entry.slug}`">
-                <Icon name="lucide:pencil" class="w-3.5 h-3.5" />
-              </NuxtLink>
-            </Button>
-            <Button
-              size="sm" variant="ghost"
-              class="h-7 px-2 text-destructive"
-              @click="handleDelete(entry.slug)"
-            >
-              <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <p v-if="!skills?.length && !isCreating" class="text-sm text-muted-foreground text-center py-4">
+      Aucune compétence encore.
+    </p>
 
-    <!-- Compétences non documentées -->
-    <section v-if="undocumented.length">
-      <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-        Mentionnées dans les missions ({{ undocumented.length }})
-      </h2>
-      <div class="space-y-2">
-        <div
-          v-for="entry in undocumented"
-          :key="entry.slug"
-          class="border border-dashed border-border rounded-lg px-4 py-3 flex items-center justify-between gap-3"
-        >
-          <div class="flex items-center gap-2">
-            <span class="font-medium text-sm text-muted-foreground">{{ entry.name }}</span>
-            <span class="text-xs bg-muted text-muted-foreground rounded px-1.5 py-0.5">Non documenté</span>
-            <span v-if="entry.missionCount > 0" class="text-xs text-muted-foreground">
-              {{ entry.missionCount }} mission{{ entry.missionCount > 1 ? 's' : '' }}
-            </span>
-          </div>
-          <Button size="sm" variant="ghost" class="h-7 px-2 text-muted-foreground text-xs" as-child>
-            <NuxtLink to="/profile/skills/new">
-              <Icon name="lucide:file-plus" class="w-3.5 h-3.5 mr-1" /> Documenter
-            </NuxtLink>
-          </Button>
-        </div>
-      </div>
-    </section>
+    <!-- Global create form -->
+    <div v-if="isCreating" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+      <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Nouvelle compétence</h2>
+      <SkillsSkillForm
+        :domains="domains ?? []"
+        @submit="handleCreate"
+        @cancel="isCreating = false"
+        @domain-created="handleDomainCreated"
+      />
+    </div>
 
-    <div v-if="!aggregated.length" class="text-sm text-muted-foreground py-12 text-center">
-      Aucune compétence encore — ajoutez des missions avec des compétences ou créez une compétence manuellement.
+    <div
+      v-if="!isCreating"
+      class="border border-dashed border-border rounded-xl p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/40 hover:text-primary transition-colors"
+      @click="startCreate"
+    >
+      <Icon name="lucide:plus" class="w-4 h-4" />
+      <span>Nouvelle compétence</span>
     </div>
   </div>
 </template>

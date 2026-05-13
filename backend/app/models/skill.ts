@@ -2,10 +2,14 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Domain from '#models/domain'
+import User from '#models/user'
 
 export default class Skill extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
+
+  @column()
+  declare userId: number
 
   @column()
   declare slug: string
@@ -18,6 +22,9 @@ export default class Skill extends BaseModel {
 
   @belongsTo(() => Domain)
   declare domain: BelongsTo<typeof Domain>
+
+  @belongsTo(() => User)
+  declare user: BelongsTo<typeof User>
 
   @column()
   declare level: number | null

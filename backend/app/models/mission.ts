@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Experience from '#models/experience'
+import User from '#models/user'
 
 export interface SkillEntry {
   name: string
@@ -11,6 +12,9 @@ export interface SkillEntry {
 export default class Mission extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
+
+  @column()
+  declare userId: number
 
   @column()
   declare slug: string
@@ -53,6 +57,9 @@ export default class Mission extends BaseModel {
 
   @belongsTo(() => Experience)
   declare experience: BelongsTo<typeof Experience>
+
+  @belongsTo(() => User)
+  declare user: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

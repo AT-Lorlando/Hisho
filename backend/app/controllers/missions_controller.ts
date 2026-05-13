@@ -14,16 +14,23 @@ function serializeMission(mission: Mission) {
 }
 
 export default class MissionsController {
-  async index({ request, response }: HttpContext) {
+  async index({ auth, request, response }: HttpContext) {
+    const userId = auth.user!.id
     const type = request.input('type') as string | undefined
     const experienceSlug = request.input('experience') as string | undefined
 
-    const query = Mission.query().preload('experience').orderBy('start_date', 'desc')
+    const query = Mission.query()
+      .where('userId', userId)
+      .preload('experience')
+      .orderBy('start_date', 'desc')
 
     if (type) query.where('type', type)
 
     if (experienceSlug) {
-      const exp = await Experience.findBy('slug', experienceSlug)
+      const exp = await Experience.query()
+        .where('userId', userId)
+        .where('slug', experienceSlug)
+        .first()
       if (!exp) return response.ok([])
       query.where('experience_id', exp.id)
     }
@@ -32,8 +39,9 @@ export default class MissionsController {
     return response.ok(missions.map(serializeMission))
   }
 
-  async show({ params, response }: HttpContext) {
+  async show({ auth, params, response }: HttpContext) {
     const mission = await Mission.query()
+      .where('userId', auth.user!.id)
       .where('slug', params.slug)
       .preload('experience')
       .first()
@@ -41,20 +49,27 @@ export default class MissionsController {
     return response.ok(serializeMission(mission))
   }
 
-  async store({ request, response }: HttpContext) {
+  async store({ auth, request, response }: HttpContext) {
+    const userId = auth.user!.id
     const { experience: experienceSlug, domains, skills, ...rest } =
       await createMissionValidator.validate(request.body())
 
     let experienceId: number | null = null
     if (experienceSlug) {
-      const exp = await Experience.findBy('slug', experienceSlug)
+      const exp = await Experience.query()
+        .where('userId', userId)
+        .where('slug', experienceSlug)
+        .first()
       if (!exp)
         return response.unprocessableEntity({ message: `Experience '${experienceSlug}' not found` })
       experienceId = exp.id
     }
 
     const slug = generateSlug(rest.title)
-    const exists = await Mission.findBy('slug', slug)
+    const exists = await Mission.query()
+      .where('userId', userId)
+      .where('slug', slug)
+      .first()
     if (exists) return response.conflict({ message: `Slug "${slug}" already exists` })
 
     const derivedType = experienceId ? 'pro' : 'perso'
@@ -62,6 +77,7 @@ export default class MissionsController {
     await Mission.create({
       ...rest,
       slug,
+      userId,
       type: derivedType,
       experienceId,
       domains: (domains ?? []) as SkillEntry[],
@@ -70,8 +86,12 @@ export default class MissionsController {
     return response.created({ slug })
   }
 
-  async update({ params, request, response }: HttpContext) {
-    const mission = await Mission.findBy('slug', params.slug)
+  async update({ auth, params, request, response }: HttpContext) {
+    const userId = auth.user!.id
+    const mission = await Mission.query()
+      .where('userId', userId)
+      .where('slug', params.slug)
+      .first()
     if (!mission) return response.notFound({ message: 'Mission not found' })
 
     const { experience: experienceSlug, domains, skills, ...rest } =
@@ -79,7 +99,10 @@ export default class MissionsController {
 
     let experienceId: number | null = null
     if (experienceSlug) {
-      const exp = await Experience.findBy('slug', experienceSlug)
+      const exp = await Experience.query()
+        .where('userId', userId)
+        .where('slug', experienceSlug)
+        .first()
       if (!exp)
         return response.unprocessableEntity({ message: `Experience '${experienceSlug}' not found` })
       experienceId = exp.id
@@ -96,8 +119,11 @@ export default class MissionsController {
     return response.ok({ slug: mission.slug })
   }
 
-  async destroy({ params, response }: HttpContext) {
-    const mission = await Mission.findBy('slug', params.slug)
+  async destroy({ auth, params, response }: HttpContext) {
+    const mission = await Mission.query()
+      .where('userId', auth.user!.id)
+      .where('slug', params.slug)
+      .first()
     if (!mission) return response.notFound({ message: 'Mission not found' })
     await mission.delete()
     return response.noContent()

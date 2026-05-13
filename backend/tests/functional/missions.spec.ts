@@ -10,15 +10,15 @@ test.group('MissionsController', (group) => {
     return User.create({ email: `u${Date.now()}@test.com`, password: 'password123' })
   }
 
-  async function createExperience() {
+  async function createExperience(userId: number) {
     const slug = `testexp-${Date.now()}`
-    const exp = await Experience.create({ slug, title: `TestExp ${Date.now()}` })
+    const exp = await Experience.create({ slug, title: `TestExp ${Date.now()}`, userId })
     return { slug, exp }
   }
 
   test('POST /missions creates a pro mission linked to experience', async ({ client }) => {
     const user = await createUser()
-    const { slug: expSlug } = await createExperience()
+    const { slug: expSlug } = await createExperience(user.id)
     const response = await client
       .post('/missions')
       .loginAs(user)
@@ -67,7 +67,7 @@ test.group('MissionsController', (group) => {
     assert,
   }) => {
     const user = await createUser()
-    const { slug: expSlug } = await createExperience()
+    const { slug: expSlug } = await createExperience(user.id)
     const postRes = await client
       .post('/missions')
       .loginAs(user)
@@ -83,7 +83,7 @@ test.group('MissionsController', (group) => {
 
   test('GET /missions/:slug returns experience as slug string', async ({ client }) => {
     const user = await createUser()
-    const { slug: expSlug } = await createExperience()
+    const { slug: expSlug } = await createExperience(user.id)
     await client
       .post('/missions')
       .loginAs(user)
@@ -102,7 +102,7 @@ test.group('MissionsController', (group) => {
 
   test('GET /missions/:slug returns persisted SkillEntry domains and skills', async ({ client }) => {
     const user = await createUser()
-    const { slug: expSlug } = await createExperience()
+    const { slug: expSlug } = await createExperience(user.id)
     const postRes = await client
       .post('/missions')
       .loginAs(user)

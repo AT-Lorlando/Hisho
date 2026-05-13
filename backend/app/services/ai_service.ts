@@ -129,9 +129,9 @@ function repairJson(raw: string): string {
 }
 
 export class AiService {
-  private baseUrl = env.get('OPENWEBUI_URL')
-  private model = env.get('OPENWEBUI_MODEL')
-  private apiKey = env.get('OPENWEBUI_API_KEY')
+  private baseUrl = env.get('AI_URL')
+  private model = env.get('AI_MODEL')
+  private apiKey = env.get('AI_API_KEY')
 
   private async callCompletions(
     messages: { role: string; content: string }[],

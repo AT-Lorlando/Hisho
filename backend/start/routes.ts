@@ -10,6 +10,7 @@ const SkillsController = () => import('#controllers/skills_controller')
 const DomainsController = () => import('#controllers/domains_controller')
 const CertificationsController = () => import('#controllers/certifications_controller')
 const CountsController = () => import('#controllers/counts_controller')
+const AiController = () => import('#controllers/ai_controller')
 
 router.get('/', async () => ({ hello: 'world' }))
 
@@ -19,6 +20,7 @@ router
     router.post('/login', [AuthController, 'login']).use(middleware.guest())
     router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
     router.get('/me', [AuthController, 'me']).use(middleware.auth())
+    router.delete('/account', [AuthController, 'deleteAccount']).use(middleware.auth())
   })
   .prefix('/auth')
 
@@ -71,5 +73,8 @@ router
     router.get('/certifications/:slug', [CertificationsController, 'show'])
     router.put('/certifications/:slug', [CertificationsController, 'update'])
     router.delete('/certifications/:slug', [CertificationsController, 'destroy'])
+
+    router.post('/ai/extract', [AiController, 'extract'])
+    router.post('/ai/import', [AiController, 'importProfile'])
   })
   .use(middleware.auth())

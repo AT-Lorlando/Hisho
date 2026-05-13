@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Mission from '#models/mission'
+import Mission, { type SkillEntry } from '#models/mission'
 import Experience from '#models/experience'
 import { createMissionValidator, updateMissionValidator } from '#validators/missions'
 import { generateSlug } from '../utils/slug.js'
@@ -57,12 +57,15 @@ export default class MissionsController {
     const exists = await Mission.findBy('slug', slug)
     if (exists) return response.conflict({ message: `Slug "${slug}" already exists` })
 
+    const derivedType = experienceId ? 'pro' : 'perso'
+
     await Mission.create({
       ...rest,
       slug,
+      type: derivedType,
       experienceId,
-      domains: domains ?? [],
-      skills: skills ?? [],
+      domains: (domains ?? []) as SkillEntry[],
+      skills: (skills ?? []) as SkillEntry[],
     })
     return response.created({ slug })
   }
@@ -84,9 +87,10 @@ export default class MissionsController {
 
     mission.merge({
       ...rest,
+      type: experienceId ? 'pro' : 'perso',
       experienceId,
-      domains: domains ?? [],
-      skills: skills ?? [],
+      domains: (domains ?? []) as SkillEntry[],
+      skills: (skills ?? []) as SkillEntry[],
     })
     await mission.save()
     return response.ok({ slug: mission.slug })

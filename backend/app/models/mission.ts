@@ -3,6 +3,11 @@ import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Experience from '#models/experience'
 
+export interface SkillEntry {
+  name: string
+  level: 1 | 2 | 3 | 4 | 5
+}
+
 export default class Mission extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
@@ -23,16 +28,16 @@ export default class Mission extends BaseModel {
   declare client: string | null
 
   @column({
-    prepare: (value: string[]) => JSON.stringify(value ?? []),
+    prepare: (value: SkillEntry[]) => JSON.stringify(value ?? []),
     consume: (value: any) => (Array.isArray(value) ? value : JSON.parse(value ?? '[]')),
   })
-  declare domains: string[]
+  declare domains: SkillEntry[]
 
   @column({
-    prepare: (value: string[]) => JSON.stringify(value ?? []),
+    prepare: (value: SkillEntry[]) => JSON.stringify(value ?? []),
     consume: (value: any) => (Array.isArray(value) ? value : JSON.parse(value ?? '[]')),
   })
-  declare skills: string[]
+  declare skills: SkillEntry[]
 
   @column()
   declare startDate: string | null

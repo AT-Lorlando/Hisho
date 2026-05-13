@@ -1,5 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import Experience from '#models/experience'
+import Mission from '#models/mission'
+import Skill from '#models/skill'
+import Domain from '#models/domain'
+import Certification from '#models/certification'
 import { loginValidator, registerValidator } from '#validators/auth'
 
 export default class AuthController {
@@ -67,5 +72,25 @@ export default class AuthController {
         fullName: user.fullName,
       },
     })
+  }
+
+  /**
+   * Delete the authenticated user account and all associated data
+   */
+  async deleteAccount({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    // Delete all user data (single-user app — no user_id FK on content tables)
+    await Mission.query().delete()
+    await Experience.query().delete()
+    await Skill.query().delete()
+    await Domain.query().delete()
+    await Certification.query().delete()
+    // competency_ratings cascade on user delete
+
+    await auth.use('web').logout()
+    await User.query().where('id', user.id).delete()
+
+    return response.noContent()
   }
 }

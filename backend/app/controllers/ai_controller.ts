@@ -51,7 +51,8 @@ export default class AiController {
     }
   }
 
-  async importProfile({ request, response }: HttpContext) {
+  async importProfile({ auth, request, response }: HttpContext) {
+    const userId = auth.user!.id
     const body = request.body() as Record<string, unknown>
     normalizeImportBody(body)
     const data = await importValidator.validate(body)
@@ -63,13 +64,17 @@ export default class AiController {
     for (const exp of data.experiences ?? []) {
       try {
         const expSlug = generateSlug(exp.title)
-        const existing = await Experience.findBy('slug', expSlug)
+        const existing = await Experience.query()
+          .where('userId', userId)
+          .where('slug', expSlug)
+          .first()
         if (existing) {
           errors.push(`Experience "${exp.title}" (slug: ${expSlug}) already exists — skipped`)
           continue
         }
         const newExp = await Experience.create({
           slug: expSlug,
+          userId,
           title: exp.title,
           role: exp.role ?? null,
           client: exp.client ?? null,
@@ -83,13 +88,17 @@ export default class AiController {
         for (const mission of exp.missions ?? []) {
           try {
             const mSlug = generateSlug(mission.title)
-            const existingM = await Mission.findBy('slug', mSlug)
+            const existingM = await Mission.query()
+              .where('userId', userId)
+              .where('slug', mSlug)
+              .first()
             if (existingM) {
               errors.push(`Mission "${mission.title}" (slug: ${mSlug}) already exists — skipped`)
               continue
             }
             await Mission.create({
               slug: mSlug,
+              userId,
               title: mission.title,
               type: 'pro',
               experienceId: newExp.id,
@@ -114,13 +123,17 @@ export default class AiController {
     for (const mission of data.missions ?? []) {
       try {
         const mSlug = generateSlug(mission.title)
-        const existing = await Mission.findBy('slug', mSlug)
+        const existing = await Mission.query()
+          .where('userId', userId)
+          .where('slug', mSlug)
+          .first()
         if (existing) {
           errors.push(`Mission "${mission.title}" (slug: ${mSlug}) already exists — skipped`)
           continue
         }
         await Mission.create({
           slug: mSlug,
+          userId,
           title: mission.title,
           type: 'perso',
           experienceId: null,
@@ -150,15 +163,13 @@ export default class AiController {
       for (const s of m.skills ?? []) skillNames.add(s.name)
     }
 
-    // Upsert domains
+    // Upsert domains — scoped to userId
     for (const name of domainNames) {
       try {
         const slug = generateSlug(name)
-        const domain = await Domain.updateOrCreate({ slug }, { title: name })
+        const domain = await Domain.updateOrCreate({ slug, userId }, { title: name, userId })
         if (!created.includes(`domain:${slug}`)) created.push(`domain:${slug}`)
-        // Link skills that were just queued to this domain by matching name -> domainId
-        // (best-effort: only if a skill was created in this same import)
-        void domain // used below in skill upsert
+        void domain
       } catch (e: any) {
         errors.push(`Domain "${name}": ${e.message}`)
       }
@@ -168,15 +179,21 @@ export default class AiController {
     for (const m of allMissions) {
       const singleDomainId =
         (m.domains ?? []).length === 1
-          ? (await Domain.findBy('slug', generateSlug(m.domains![0].name)))?.id ?? null
+          ? (await Domain.query()
+              .where('userId', userId)
+              .where('slug', generateSlug(m.domains![0].name))
+              .first())?.id ?? null
           : null
 
       for (const s of m.skills ?? []) {
         try {
           const slug = generateSlug(s.name)
-          const existing = await Skill.findBy('slug', slug)
+          const existing = await Skill.query()
+            .where('userId', userId)
+            .where('slug', slug)
+            .first()
           if (!existing) {
-            await Skill.create({ slug, title: s.name, domainId: singleDomainId, level: s.level ?? null })
+            await Skill.create({ slug, userId, title: s.name, domainId: singleDomainId, level: s.level ?? null })
             if (!created.includes(`skill:${slug}`)) created.push(`skill:${slug}`)
           } else {
             let changed = false

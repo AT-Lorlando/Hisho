@@ -11,6 +11,7 @@ const DomainsController = () => import('#controllers/domains_controller')
 const CertificationsController = () => import('#controllers/certifications_controller')
 const CountsController = () => import('#controllers/counts_controller')
 const AiController = () => import('#controllers/ai_controller')
+const PublicProfileController = () => import('#controllers/public_profile_controller')
 
 router.get('/', async () => ({ hello: 'world' }))
 
@@ -78,3 +79,14 @@ router
     router.post('/ai/import', [AiController, 'importProfile'])
   })
   .use(middleware.auth())
+
+// Public routes — no auth required
+router.get('/users', [PublicProfileController, 'listUsers'])
+router.get('/users/:id/profile', [PublicProfileController, 'profile'])
+router.get('/users/:id/experiences', [PublicProfileController, 'experiences'])
+router.get('/users/:id/experiences/:slug', [PublicProfileController, 'experience'])
+router.get('/users/:id/missions', [PublicProfileController, 'missions'])
+router.get('/users/:id/skills', [PublicProfileController, 'skills'])
+router.get('/users/:id/domains', [PublicProfileController, 'domains'])
+router.get('/users/:id/certifications', [PublicProfileController, 'certifications'])
+router.get('/users/:id/counts', [PublicProfileController, 'counts'])

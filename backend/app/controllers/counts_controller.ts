@@ -6,13 +6,14 @@ import Domain from '#models/domain'
 import Certification from '#models/certification'
 
 export default class CountsController {
-  async index({ response }: HttpContext) {
+  async index({ auth, response }: HttpContext) {
+    const userId = auth.user!.id
     const [experiences, missions, skills, domains, certifications] = await Promise.all([
-      Experience.query().count('id as total'),
-      Mission.query().count('id as total'),
-      Skill.query().count('id as total'),
-      Domain.query().count('id as total'),
-      Certification.query().count('id as total'),
+      Experience.query().where('userId', userId).count('id as total'),
+      Mission.query().where('userId', userId).count('id as total'),
+      Skill.query().where('userId', userId).count('id as total'),
+      Domain.query().where('userId', userId).count('id as total'),
+      Certification.query().where('userId', userId).count('id as total'),
     ])
     return response.ok({
       experiences: Number(experiences[0].$extras.total),

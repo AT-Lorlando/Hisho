@@ -18,47 +18,59 @@ function serializeSkill(skill: Skill) {
   }
 }
 
-async function resolveDomainId(domainSlug?: string): Promise<number | null> {
+async function resolveDomainId(domainSlug: string | undefined, userId: number): Promise<number | null> {
   if (!domainSlug) return null
-  const domain = await Domain.findBy('slug', domainSlug)
+  const domain = await Domain.query().where('userId', userId).where('slug', domainSlug).first()
   return domain?.id ?? null
 }
 
 export default class SkillsController {
-  async index({ response }: HttpContext) {
-    const skills = await Skill.query().preload('domain').orderBy('title', 'asc')
+  async index({ auth, response }: HttpContext) {
+    const skills = await Skill.query()
+      .where('userId', auth.user!.id)
+      .preload('domain')
+      .orderBy('title', 'asc')
     return response.ok(skills.map(serializeSkill))
   }
 
-  async show({ params, response }: HttpContext) {
-    const skill = await Skill.query().where('slug', params.slug).preload('domain').first()
+  async show({ auth, params, response }: HttpContext) {
+    const skill = await Skill.query()
+      .where('userId', auth.user!.id)
+      .where('slug', params.slug)
+      .preload('domain')
+      .first()
     if (!skill) return response.notFound({ message: 'Skill not found' })
     return response.ok(serializeSkill(skill))
   }
 
-  async store({ request, response }: HttpContext) {
+  async store({ auth, request, response }: HttpContext) {
+    const userId = auth.user!.id
     const { domainSlug, ...rest } = await createSkillValidator.validate(request.body())
     const slug = generateSlug(rest.title)
-    const exists = await Skill.findBy('slug', slug)
+    const exists = await Skill.query().where('userId', userId).where('slug', slug).first()
     if (exists) return response.conflict({ message: `Slug "${slug}" already exists` })
-    const domainId = await resolveDomainId(domainSlug)
-    const skill = await Skill.create({ ...rest, slug, domainId })
+    const domainId = await resolveDomainId(domainSlug, userId)
+    const skill = await Skill.create({ ...rest, slug, domainId, userId })
     await skill.load('domain')
     return response.created({ slug: skill.slug })
   }
 
-  async update({ params, request, response }: HttpContext) {
-    const skill = await Skill.findBy('slug', params.slug)
+  async update({ auth, params, request, response }: HttpContext) {
+    const userId = auth.user!.id
+    const skill = await Skill.query().where('userId', userId).where('slug', params.slug).first()
     if (!skill) return response.notFound({ message: 'Skill not found' })
     const { domainSlug, ...rest } = await updateSkillValidator.validate(request.body())
-    const domainId = await resolveDomainId(domainSlug)
+    const domainId = await resolveDomainId(domainSlug, userId)
     skill.merge({ ...rest, domainId })
     await skill.save()
     return response.ok({ slug: skill.slug })
   }
 
-  async destroy({ params, response }: HttpContext) {
-    const skill = await Skill.findBy('slug', params.slug)
+  async destroy({ auth, params, response }: HttpContext) {
+    const skill = await Skill.query()
+      .where('userId', auth.user!.id)
+      .where('slug', params.slug)
+      .first()
     if (!skill) return response.notFound({ message: 'Skill not found' })
     await skill.delete()
     return response.noContent()

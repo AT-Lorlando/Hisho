@@ -12,6 +12,10 @@ const { data: users, error } = await useFetch<any[]>('/api/v1/users')
       Impossible de charger la liste des utilisateurs.
     </div>
 
+    <p v-else-if="!users || users.length === 0" class="text-muted-foreground">
+      Aucun utilisateur trouvé.
+    </p>
+
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <NuxtLink
         v-for="user in users"
@@ -24,9 +28,5 @@ const { data: users, error } = await useFetch<any[]>('/api/v1/users')
         <p v-if="user.location" class="text-xs text-muted-foreground mt-1">{{ user.location }}</p>
       </NuxtLink>
     </div>
-
-    <p v-if="users && users.length === 0" class="text-muted-foreground">
-      Aucun utilisateur trouvé.
-    </p>
   </div>
 </template>

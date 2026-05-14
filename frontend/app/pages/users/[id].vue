@@ -4,12 +4,10 @@ definePageMeta({ auth: false })
 const route = useRoute()
 const id = route.params.id as string
 
-const [profile, experiences, missions, skills, domains, certifications] = await Promise.all([
+const [profile, experiences, skills, certifications] = await Promise.all([
   $fetch<any>(`/api/v1/users/${id}/profile`).catch(() => null),
   $fetch<any[]>(`/api/v1/users/${id}/experiences`).catch(() => []),
-  $fetch<any[]>(`/api/v1/users/${id}/missions`).catch(() => []),
   $fetch<any[]>(`/api/v1/users/${id}/skills`).catch(() => []),
-  $fetch<any[]>(`/api/v1/users/${id}/domains`).catch(() => []),
   $fetch<any[]>(`/api/v1/users/${id}/certifications`).catch(() => []),
 ])
 

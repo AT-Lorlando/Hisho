@@ -16,10 +16,6 @@ function serializePublicUser(user: User) {
     linkedinUrl: user.linkedinUrl,
     githubUrl: user.githubUrl,
     websiteUrl: user.websiteUrl,
-    phone: user.phone,
-    availability: user.availability,
-    dailyRate: user.dailyRate,
-    lastCompiledAt: user.lastCompiledAt,
   }
 }
 

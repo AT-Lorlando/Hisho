@@ -7,7 +7,7 @@ export default class Domain extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
-  @column()
+  @column({ serializeAs: null })
   declare userId: number
 
   @column()

@@ -20,19 +20,28 @@ function serializePublicUser(user: User) {
 }
 
 export default class PublicProfileController {
+  private parseUserId(raw: string): number | null {
+    const id = Number(raw)
+    return Number.isFinite(id) ? id : null
+  }
+
   async listUsers({ response }: HttpContext) {
     const users = await User.all()
     return response.ok(users.map(serializePublicUser))
   }
 
   async profile({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     return response.ok(serializePublicUser(user))
   }
 
   async experiences({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const experiences = await Experience.query()
       .where('userId', user.id)
@@ -47,7 +56,9 @@ export default class PublicProfileController {
   }
 
   async experience({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const experience = await Experience.query()
       .where('userId', user.id)
@@ -58,7 +69,9 @@ export default class PublicProfileController {
   }
 
   async missions({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const missions = await Mission.query()
       .where('userId', user.id)
@@ -77,7 +90,9 @@ export default class PublicProfileController {
   }
 
   async skills({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const skills = await Skill.query()
       .where('userId', user.id)
@@ -98,7 +113,9 @@ export default class PublicProfileController {
   }
 
   async domains({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const domains = await Domain.query()
       .where('userId', user.id)
@@ -107,7 +124,9 @@ export default class PublicProfileController {
   }
 
   async certifications({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const userId = this.parseUserId(params.id as string)
+    if (!userId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(userId)
     if (!user) return response.notFound({ message: 'User not found' })
     const certs = await Certification.query()
       .where('userId', user.id)
@@ -116,7 +135,9 @@ export default class PublicProfileController {
   }
 
   async counts({ params, response }: HttpContext) {
-    const user = await User.find(Number(params.id))
+    const parsedId = this.parseUserId(params.id as string)
+    if (!parsedId) return response.notFound({ message: 'User not found' })
+    const user = await User.find(parsedId)
     if (!user) return response.notFound({ message: 'User not found' })
     const userId = user.id
     const [experiences, missions, skills, domains, certifications] = await Promise.all([

@@ -54,6 +54,13 @@ test.group('PublicProfileController', (group) => {
     const body = res.body() as any[]
     assert.isArray(body)
     assert.isTrue(body.length > 0)
+    const experience = body[0]
+    assert.notProperty(experience, 'userId')
+  })
+
+  test('GET /users/:id/experiences returns 404 for non-numeric user id', async ({ client }) => {
+    const res = await client.get('/users/abc/experiences')
+    res.assertStatus(404)
   })
 
   test('GET /users/:id/certifications returns certifications without auth', async ({ client, assert }) => {
@@ -71,6 +78,8 @@ test.group('PublicProfileController', (group) => {
     const body = res.body() as any[]
     assert.isArray(body)
     assert.isTrue(body.length > 0)
+    const cert = body[0]
+    assert.notProperty(cert, 'userId')
   })
 
   test('GET /users/:id/counts returns content counts without auth', async ({ client, assert }) => {

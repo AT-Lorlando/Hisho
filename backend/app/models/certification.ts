@@ -7,7 +7,7 @@ export default class Certification extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
-  @column()
+  @column({ serializeAs: null })
   declare userId: number
 
   @column()

@@ -30,7 +30,7 @@ export const useAuth = () => {
     try {
       await authStore.logout()
       toast.success('Déconnexion réussie')
-      await navigateTo('/login')
+      await navigateTo('/')
     } catch (error) {
       // Error toast is already handled by custom fetch
       throw error
@@ -45,7 +45,7 @@ export const useAuth = () => {
     if (!authStore.isAuthenticated) {
       const user = await fetchUser()
       if (!user) {
-        await navigateTo('/login')
+        await navigateTo('/')
         return false
       }
     }

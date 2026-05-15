@@ -64,7 +64,7 @@ const EXTRACT_SYSTEM_PROMPT = `À partir du texte fourni, extrais les informatio
       "startDate": "YYYY-MM ou null",
       "endDate": "YYYY-MM ou null (null si en cours)",
       "domains": [{ "name": "string", "level": 1 }],
-      "skills": [{ "name": "string", "level": 1 }],
+      "skills": [{ "name": "string", "level": 1, "domain": "string" }],
       "body": "string ou null"
     }]
   }],
@@ -73,7 +73,7 @@ const EXTRACT_SYSTEM_PROMPT = `À partir du texte fourni, extrais les informatio
     "startDate": "YYYY-MM ou null",
     "endDate": "YYYY-MM ou null",
     "domains": [{ "name": "string", "level": 1 }],
-    "skills": [{ "name": "string", "level": 1 }],
+    "skills": [{ "name": "string", "level": 1, "domain": "string" }],
     "body": "string ou null"
   }]
 }
@@ -83,7 +83,7 @@ Règles :
 - Les expériences professionnelles (CDI, CDD, freelance, alternance, stage) vont dans "experiences".
 - Les projets personnels (side projects, projets perso, open source…) vont dans "missions" (sans expérience parente).
 - Pour "domains", choisis exclusivement parmi : ${DOMAINS_LIST.join(', ')}. N'invente aucun autre domaine.
-- "skills" est libre (technologies, outils, langages, frameworks).
+- "skills" est libre (technologies, outils, langages, frameworks), mais reste focus sur le nom de la technologie/du soft.
 - N'inclus PAS de localisation — l'utilisateur la renseignera manuellement.
 - Ne génère que les entrées dont tu es certain. Si une info est absente, utilise null.
 - Retourne uniquement le JSON, rien d'autre.`
@@ -135,8 +135,8 @@ export class AiService {
 
   private async callCompletions(
     messages: { role: string; content: string }[],
-    timeoutMs = 60_000,
-    maxTokens = 4096
+    timeoutMs = 300_000,
+    maxTokens = 16384
   ): Promise<string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`
@@ -148,20 +148,38 @@ export class AiService {
       const res = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ model: this.model, messages, max_tokens: maxTokens }),
+        body: JSON.stringify({ model: this.model, messages, max_tokens: maxTokens, stream: true }),
         signal: controller.signal,
       })
 
       if (!res.ok) {
         const text = await res.text()
-        throw new Error(`OpenWebUI error ${res.status}: ${text}`)
+        throw new Error(`AI error ${res.status}: ${text}`)
       }
 
-      const json = (await res.json()) as { choices: { message: { content: string } }[] } | null
-      console.log('[AiService] parsed json:', JSON.stringify(json)?.substring(0, 200))
-      if (!json) throw new Error('OpenWebUI returned empty/null response body')
-      if (!json.choices?.length) throw new Error(`OpenWebUI returned no choices. Full response: ${JSON.stringify(json)}`)
-      return json.choices[0]?.message?.content ?? ''
+      if (!res.body) throw new Error('AI returned no response body')
+
+      let content = ''
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+
+      outer: while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        for (const line of chunk.split('\n')) {
+          const trimmed = line.trim()
+          if (!trimmed.startsWith('data: ')) continue
+          const data = trimmed.slice(6)
+          if (data === '[DONE]') break outer
+          try {
+            const json = JSON.parse(data) as { choices?: { delta?: { content?: string } }[] }
+            content += json.choices?.[0]?.delta?.content ?? ''
+          } catch {}
+        }
+      }
+
+      return content
     } finally {
       clearTimeout(timer)
     }
@@ -172,7 +190,7 @@ export class AiService {
       { role: 'system', content: EXTRACT_SYSTEM_PROMPT },
       { role: 'user', content: profileText },
     ]
-    const raw = await this.callCompletions(messages, 300_000, 16384)
+    const raw = await this.callCompletions(messages)
 
     console.log('[AiService.extract] raw response length:', raw.length)
     console.log('[AiService.extract] raw response:\n', raw)

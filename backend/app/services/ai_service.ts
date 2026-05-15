@@ -137,7 +137,7 @@ export class AiService {
     messages: { role: string; content: string }[],
     timeoutMs = 300_000,
     maxTokens = 16384,
-    onChunk?: (delta: string) => void
+    onChunk?: (delta: string, isThinking: boolean) => void
   ): Promise<string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`
@@ -180,10 +180,10 @@ export class AiService {
             const d = json.choices?.[0]?.delta
             const reasoning = d?.reasoning_content ?? ''
             const text = d?.content ?? ''
-            if (reasoning) onChunk?.(reasoning)
+            if (reasoning) onChunk?.(reasoning, true)
             if (text) {
               content += text
-              onChunk?.(text)
+              onChunk?.(text, false)
             }
           } catch {}
         }
@@ -195,12 +195,17 @@ export class AiService {
     }
   }
 
-  async extract(profileText: string, onChunk?: (delta: string) => void): Promise<ExtractedProfile> {
+  async extract(profileText: string, onChunk?: (delta: string, isThinking: boolean) => void): Promise<ExtractedProfile> {
     const messages = [
       { role: 'system', content: EXTRACT_SYSTEM_PROMPT },
       { role: 'user', content: profileText },
     ]
-    const raw = await this.callCompletions(messages, undefined, undefined, onChunk)
+    const raw = await this.callCompletions(
+      messages,
+      undefined,
+      undefined,
+      onChunk ? (delta, isThinking) => onChunk(delta, isThinking) : undefined
+    )
 
     console.log('[AiService.extract] raw response length:', raw.length)
     console.log('[AiService.extract] raw response:\n', raw)

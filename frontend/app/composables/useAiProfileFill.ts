@@ -1,5 +1,25 @@
 import type { ExtractedProfile, ImportResult } from '~/types/content'
 
+function repairJson(raw: string): string {
+  const stack: string[] = []
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i]
+    if (escaped) { escaped = false; continue }
+    if (inString) { if (c === '\\') escaped = true; else if (c === '"') inString = false; continue }
+    if (c === '"') { inString = true; continue }
+    if (c === '{') stack.push('}')
+    else if (c === '[') stack.push(']')
+    else if (c === '}' && stack.at(-1) === '}') stack.pop()
+    else if (c === ']' && stack.at(-1) === ']') stack.pop()
+  }
+  let out = raw.trimEnd().replace(/,\s*$/, '')
+  if (inString) out += '"'
+  for (let i = stack.length - 1; i >= 0; i--) out += stack[i]
+  return out
+}
+
 // Singleton state — shared across all component instances
 const isOpen = ref(false)
 const isProgressOpen = ref(false)
@@ -44,6 +64,20 @@ export function useAiProfileFill() {
     importResult.value = null
     rawJsonOnError.value = null
 
+    let jsonBuffer = ''
+
+    function tryRecoverJson() {
+      if (extractedData.value || !jsonBuffer.trim()) return
+      const start = jsonBuffer.search(/[{[]/)
+      if (start === -1) return
+      const fragment = jsonBuffer.slice(start)
+      // close any open braces/brackets
+      const repaired = repairJson(fragment)
+      try {
+        extractedData.value = JSON.parse(repaired) as ExtractedProfile
+      } catch {}
+    }
+
     try {
       const res = await fetch('/api/v1/ai/extract', {
         method: 'POST',
@@ -70,6 +104,7 @@ export function useAiProfileFill() {
           const data = JSON.parse(part.slice(6)) as {
             type: 'chunk' | 'done' | 'error'
             content?: string
+            isThinking?: boolean
             result?: ExtractedProfile
             message?: string
             rawJson?: string | null
@@ -77,6 +112,7 @@ export function useAiProfileFill() {
 
           if (data.type === 'chunk' && data.content) {
             streamingContent.value += data.content
+            if (!data.isThinking) jsonBuffer += data.content
           } else if (data.type === 'done' && data.result) {
             extractedData.value = data.result
           } else if (data.type === 'error') {
@@ -86,9 +122,13 @@ export function useAiProfileFill() {
         }
       }
     } catch (e: any) {
-      // Ignore AbortError — happens when client navigates away intentionally
-      if (e?.name !== 'AbortError') {
-        extractError.value = e.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
+      if (e?.name === 'AbortError') {
+        tryRecoverJson() // stream cut before done event — try to use buffered JSON
+      } else {
+        tryRecoverJson()
+        if (!extractedData.value) {
+          extractError.value = e.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
+        }
       }
     } finally {
       isExtracting.value = false

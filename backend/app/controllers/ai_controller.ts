@@ -53,8 +53,8 @@ export default class AiController {
 
     void (async () => {
       try {
-        const result = await aiService.extract(message, (delta) => {
-          send({ type: 'chunk', content: delta })
+        const result = await aiService.extract(message, (delta, isThinking) => {
+          send({ type: 'chunk', content: delta, isThinking })
         })
         send({ type: 'done', result })
       } catch (e: any) {

@@ -9,6 +9,9 @@ export default defineNuxtConfig({
   experimental: {
     asyncContext: true,
   },
+  runtimeConfig: {
+    apiUrl: env.parsed?.API_URL ?? 'http://localhost:3333',
+  },
   devtools: { enabled: true },
   modules: ['@nuxt/eslint', '@nuxt/ui', 'shadcn-nuxt', '@nuxt/icon', '@pinia/nuxt'],
   app: {

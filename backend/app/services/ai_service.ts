@@ -174,11 +174,16 @@ export class AiService {
           const data = trimmed.slice(6)
           if (data === '[DONE]') break outer
           try {
-            const json = JSON.parse(data) as { choices?: { delta?: { content?: string } }[] }
-            const delta = json.choices?.[0]?.delta?.content ?? ''
-            if (delta) {
-              content += delta
-              onChunk?.(delta)
+            const json = JSON.parse(data) as {
+              choices?: { delta?: { content?: string | null; reasoning_content?: string | null } }[]
+            }
+            const d = json.choices?.[0]?.delta
+            const reasoning = d?.reasoning_content ?? ''
+            const text = d?.content ?? ''
+            if (reasoning) onChunk?.(reasoning)
+            if (text) {
+              content += text
+              onChunk?.(text)
             }
           } catch {}
         }

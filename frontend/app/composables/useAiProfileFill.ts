@@ -4,6 +4,7 @@ import type { ExtractedProfile, ImportResult } from '~/types/content'
 const isOpen = ref(false)
 const profileText = ref('')
 const extractedData = ref<ExtractedProfile | null>(null)
+const streamingContent = ref('')
 const isExtracting = ref(false)
 const isImporting = ref(false)
 const importResult = ref<ImportResult | null>(null)
@@ -22,6 +23,7 @@ export function useAiProfileFill() {
   function reset() {
     profileText.value = ''
     extractedData.value = null
+    streamingContent.value = ''
     importResult.value = null
     extractError.value = null
     rawJsonOnError.value = null
@@ -32,17 +34,52 @@ export function useAiProfileFill() {
     isExtracting.value = true
     extractError.value = null
     extractedData.value = null
+    streamingContent.value = ''
+    rawJsonOnError.value = null
 
     try {
-      const res = await $fetch<ExtractedProfile>('/api/v1/ai/extract', {
+      const res = await fetch('/api/v1/ai/extract', {
         method: 'POST',
-        body: { message: profileText.value },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: profileText.value }),
       })
-      extractedData.value = res
-      rawJsonOnError.value = null
+
+      if (!res.body) throw new Error('Pas de réponse du serveur.')
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() ?? ''
+
+        for (const part of parts) {
+          if (!part.startsWith('data: ')) continue
+          const data = JSON.parse(part.slice(6)) as {
+            type: 'chunk' | 'done' | 'error'
+            content?: string
+            result?: ExtractedProfile
+            message?: string
+            rawJson?: string | null
+          }
+
+          if (data.type === 'chunk' && data.content) {
+            streamingContent.value += data.content
+          } else if (data.type === 'done' && data.result) {
+            extractedData.value = data.result
+          } else if (data.type === 'error') {
+            extractError.value = data.message ?? "L'IA n'a pas pu extraire les données."
+            rawJsonOnError.value = data.rawJson ?? null
+          }
+        }
+      }
     } catch (e: any) {
-      extractError.value = e.data?.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
-      rawJsonOnError.value = e.data?.rawJson ?? null
+      extractError.value = e.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
     } finally {
       isExtracting.value = false
     }
@@ -111,6 +148,7 @@ export function useAiProfileFill() {
     isOpen,
     profileText,
     extractedData,
+    streamingContent,
     isExtracting,
     isImporting,
     importResult,

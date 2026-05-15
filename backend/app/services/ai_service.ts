@@ -136,7 +136,8 @@ export class AiService {
   private async callCompletions(
     messages: { role: string; content: string }[],
     timeoutMs = 300_000,
-    maxTokens = 16384
+    maxTokens = 16384,
+    onChunk?: (delta: string) => void
   ): Promise<string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`
@@ -174,7 +175,11 @@ export class AiService {
           if (data === '[DONE]') break outer
           try {
             const json = JSON.parse(data) as { choices?: { delta?: { content?: string } }[] }
-            content += json.choices?.[0]?.delta?.content ?? ''
+            const delta = json.choices?.[0]?.delta?.content ?? ''
+            if (delta) {
+              content += delta
+              onChunk?.(delta)
+            }
           } catch {}
         }
       }
@@ -185,12 +190,12 @@ export class AiService {
     }
   }
 
-  async extract(profileText: string): Promise<ExtractedProfile> {
+  async extract(profileText: string, onChunk?: (delta: string) => void): Promise<ExtractedProfile> {
     const messages = [
       { role: 'system', content: EXTRACT_SYSTEM_PROMPT },
       { role: 'user', content: profileText },
     ]
-    const raw = await this.callCompletions(messages)
+    const raw = await this.callCompletions(messages, undefined, undefined, onChunk)
 
     console.log('[AiService.extract] raw response length:', raw.length)
     console.log('[AiService.extract] raw response:\n', raw)

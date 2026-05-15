@@ -3,6 +3,7 @@ const {
   isOpen,
   profileText,
   extractedData,
+  streamingContent,
   isExtracting,
   isImporting,
   importResult,
@@ -94,9 +95,18 @@ const hasExtractedContent = computed(
         <!-- Right: recap -->
         <div class="w-80 shrink-0 flex flex-col">
           <div class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- Streaming progress -->
+            <div v-if="isExtracting" class="space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                <Icon name="lucide:loader-circle" class="w-3 h-3 animate-spin" />
+                Génération en cours…
+              </p>
+              <pre class="text-xs text-foreground/80 whitespace-pre-wrap break-words font-mono bg-muted/50 rounded-md p-3 max-h-96 overflow-y-auto leading-relaxed">{{ streamingContent || '…' }}</pre>
+            </div>
+
             <!-- Empty state -->
             <div
-              v-if="!hasExtractedContent && !extractError"
+              v-else-if="!hasExtractedContent && !extractError"
               class="text-sm text-muted-foreground text-center py-8 space-y-2"
             >
               <Icon name="lucide:scan-text" class="w-8 h-8 mx-auto opacity-30" />

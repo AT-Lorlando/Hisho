@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream'
 import type { HttpContext } from '@adonisjs/core/http'
 import { extractValidator, importValidator } from '#validators/ai'
 import aiService from '#services/ai_service'
@@ -37,18 +38,38 @@ function normalizeImportBody(body: Record<string, unknown>) {
 export default class AiController {
   async extract({ request, response }: HttpContext) {
     const { message } = await request.validateUsing(extractValidator)
-    try {
-      const extracted = await aiService.extract(message)
-      return response.ok(extracted)
-    } catch (e: any) {
-      if (e instanceof SyntaxError) {
-        return response.unprocessableEntity({
-          message: 'L\'IA n\'a pas pu produire un JSON valide. Télécharge le brut pour le corriger manuellement.',
-          rawJson: (e as any).rawCandidate ?? null,
+
+    const pass = new PassThrough()
+
+    response.header('Content-Type', 'text/event-stream')
+    response.header('Cache-Control', 'no-cache')
+    response.header('Connection', 'keep-alive')
+    response.header('X-Accel-Buffering', 'no')
+
+    const send = (payload: object) => pass.write(`data: ${JSON.stringify(payload)}\n\n`)
+
+    void (async () => {
+      try {
+        const result = await aiService.extract(message, (delta) => {
+          send({ type: 'chunk', content: delta })
         })
+        send({ type: 'done', result })
+      } catch (e: any) {
+        if (e instanceof SyntaxError) {
+          send({
+            type: 'error',
+            message: "L'IA n'a pas pu produire un JSON valide. Télécharge le brut pour le corriger manuellement.",
+            rawJson: (e as any).rawCandidate ?? null,
+          })
+        } else {
+          send({ type: 'error', message: e.message ?? 'AI service error' })
+        }
+      } finally {
+        pass.end()
       }
-      return response.serviceUnavailable({ message: e.message ?? 'AI service error' })
-    }
+    })()
+
+    return response.stream(pass)
   }
 
   async importProfile({ auth, request, response }: HttpContext) {
@@ -123,10 +144,7 @@ export default class AiController {
     for (const mission of data.missions ?? []) {
       try {
         const mSlug = generateSlug(mission.title)
-        const existing = await Mission.query()
-          .where('userId', userId)
-          .where('slug', mSlug)
-          .first()
+        const existing = await Mission.query().where('userId', userId).where('slug', mSlug).first()
         if (existing) {
           errors.push(`Mission "${mission.title}" (slug: ${mSlug}) already exists — skipped`)
           continue
@@ -179,21 +197,26 @@ export default class AiController {
     for (const m of allMissions) {
       const singleDomainId =
         (m.domains ?? []).length === 1
-          ? (await Domain.query()
-              .where('userId', userId)
-              .where('slug', generateSlug(m.domains![0].name))
-              .first())?.id ?? null
+          ? ((
+              await Domain.query()
+                .where('userId', userId)
+                .where('slug', generateSlug(m.domains![0].name))
+                .first()
+            )?.id ?? null)
           : null
 
       for (const s of m.skills ?? []) {
         try {
           const slug = generateSlug(s.name)
-          const existing = await Skill.query()
-            .where('userId', userId)
-            .where('slug', slug)
-            .first()
+          const existing = await Skill.query().where('userId', userId).where('slug', slug).first()
           if (!existing) {
-            await Skill.create({ slug, userId, title: s.name, domainId: singleDomainId, level: s.level ?? null })
+            await Skill.create({
+              slug,
+              userId,
+              title: s.name,
+              domainId: singleDomainId,
+              level: s.level ?? null,
+            })
             if (!created.includes(`skill:${slug}`)) created.push(`skill:${slug}`)
           } else {
             let changed = false

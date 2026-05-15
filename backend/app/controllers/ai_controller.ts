@@ -40,13 +40,16 @@ export default class AiController {
     const { message } = await request.validateUsing(extractValidator)
 
     const pass = new PassThrough()
+    pass.on('error', () => {}) // ignore EPIPE when client disconnects early
 
     response.header('Content-Type', 'text/event-stream')
     response.header('Cache-Control', 'no-cache')
     response.header('Connection', 'keep-alive')
     response.header('X-Accel-Buffering', 'no')
 
-    const send = (payload: object) => pass.write(`data: ${JSON.stringify(payload)}\n\n`)
+    const send = (payload: object) => {
+      if (!pass.destroyed) pass.write(`data: ${JSON.stringify(payload)}\n\n`)
+    }
 
     void (async () => {
       try {

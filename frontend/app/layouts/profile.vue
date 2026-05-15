@@ -6,5 +6,6 @@
     </main>
     <AiProfileChat />
     <AiFloatingButton />
+    <AiExtractionProgress />
   </div>
 </template>

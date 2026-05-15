@@ -2,6 +2,8 @@ import type { ExtractedProfile, ImportResult } from '~/types/content'
 
 // Singleton state — shared across all component instances
 const isOpen = ref(false)
+const isProgressOpen = ref(false)
+const isProgressExpanded = ref(true)
 const profileText = ref('')
 const extractedData = ref<ExtractedProfile | null>(null)
 const streamingContent = ref('')
@@ -31,10 +33,15 @@ export function useAiProfileFill() {
 
   async function extract() {
     if (!profileText.value.trim()) return
+    // Close the input dialog and open the floating progress panel
+    isOpen.value = false
+    isProgressOpen.value = true
+    isProgressExpanded.value = true
     isExtracting.value = true
     extractError.value = null
     extractedData.value = null
     streamingContent.value = ''
+    importResult.value = null
     rawJsonOnError.value = null
 
     try {
@@ -79,10 +86,23 @@ export function useAiProfileFill() {
         }
       }
     } catch (e: any) {
-      extractError.value = e.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
+      // Ignore AbortError — happens when client navigates away intentionally
+      if (e?.name !== 'AbortError') {
+        extractError.value = e.message ?? "L'IA n'a pas pu extraire les données. Essaie de reformuler."
+      }
     } finally {
       isExtracting.value = false
     }
+  }
+
+  function dismissProgress() {
+    if (isExtracting.value) return // don't close while running
+    isProgressOpen.value = false
+    streamingContent.value = ''
+    extractedData.value = null
+    importResult.value = null
+    extractError.value = null
+    rawJsonOnError.value = null
   }
 
   async function importProfile() {
@@ -146,6 +166,8 @@ export function useAiProfileFill() {
 
   return {
     isOpen,
+    isProgressOpen,
+    isProgressExpanded,
     profileText,
     extractedData,
     streamingContent,
@@ -153,6 +175,7 @@ export function useAiProfileFill() {
     isImporting,
     importResult,
     extractError,
+    rawJsonOnError,
     open,
     close,
     reset,
@@ -161,6 +184,6 @@ export function useAiProfileFill() {
     downloadJson,
     downloadRawJson,
     loadJsonFile,
-    rawJsonOnError,
+    dismissProgress,
   }
 }

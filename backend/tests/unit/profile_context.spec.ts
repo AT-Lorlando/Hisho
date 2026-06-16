@@ -51,6 +51,6 @@ test.group('profile_context', () => {
     const prompt = buildChatSystemPrompt('Jane Doe', 'CONTEXTE_ICI')
     assert.include(prompt, 'Jane Doe')
     assert.include(prompt, 'CONTEXTE_ICI')
-    assert.include(prompt, 'neutre')
+    assert.include(prompt, 'recruteur')
   })
 })

@@ -35,9 +35,13 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory'] as const),
-  CONTENT_DIR: Env.schema.string.optional(),
 
   AI_URL: Env.schema.string(),
   AI_MODEL: Env.schema.string(),
   AI_API_KEY: Env.schema.string.optional(),
+
+  AI_CHAT_MAX_PER_IP: Env.schema.number.optional(),
+  AI_CHAT_WINDOW_SECONDS: Env.schema.number.optional(),
+  AI_CHAT_MAX_GLOBAL: Env.schema.number.optional(),
+  AI_CHAT_GLOBAL_WINDOW_SECONDS: Env.schema.number.optional(),
 })

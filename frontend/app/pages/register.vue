@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
 
+definePageMeta({ middleware: 'guest' })
+
 const { register, isLoading } = useAuth()
 const email = ref('')
 const password = ref('')

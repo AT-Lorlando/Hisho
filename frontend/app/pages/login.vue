@@ -1,5 +1,7 @@
 <!-- frontend/app/pages/login.vue -->
 <script setup lang="ts">
+definePageMeta({ middleware: 'guest' })
+
 const { login, isLoading } = useAuth()
 const email = ref('')
 const password = ref('')

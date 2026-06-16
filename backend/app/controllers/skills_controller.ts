@@ -10,6 +10,7 @@ function serializeSkill(skill: Skill) {
     slug: skill.slug,
     title: skill.title,
     domain: skill.domain ? { slug: skill.domain.slug, title: skill.domain.title } : null,
+    level: skill.level,
     yearsOfExperience: skill.yearsOfExperience,
     aiSummary: skill.aiSummary,
     body: skill.body,

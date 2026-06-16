@@ -14,6 +14,7 @@ const emit = defineEmits<{
 const form = reactive<SkillPayload>({
   title: props.initial?.title ?? '',
   domainSlug: props.initial?.domain?.slug ?? undefined,
+  level: props.initial?.level ?? undefined,
   yearsOfExperience: props.initial?.yearsOfExperience,
 })
 
@@ -36,6 +37,7 @@ function handleSubmit() {
   emit('submit', {
     title: form.title,
     domainSlug: form.domainSlug || undefined,
+    level: form.level || undefined,
     yearsOfExperience: form.yearsOfExperience || undefined,
   })
 }
@@ -52,6 +54,18 @@ function handleSubmit() {
         <Label for="sk-years">Années d'expérience</Label>
         <Input id="sk-years" v-model.number="form.yearsOfExperience" type="number" min="0" max="30" placeholder="3" />
       </div>
+    </div>
+
+    <div class="space-y-1.5">
+      <Label for="sk-level">Niveau</Label>
+      <select
+        id="sk-level"
+        v-model.number="form.level"
+        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+      >
+        <option :value="undefined">— non défini —</option>
+        <option v-for="n in 5" :key="n" :value="n">{{ n }}/5</option>
+      </select>
     </div>
 
     <div class="space-y-1.5">

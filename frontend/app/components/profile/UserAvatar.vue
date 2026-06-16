@@ -9,8 +9,9 @@ const initials = computed(() => {
   const n = (props.name ?? '').trim()
   if (!n) return ''
   const parts = n.split(/\s+/).filter(Boolean)
-  const letters =
-    parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]
+  const first = parts[0] ?? ''
+  const last = parts[parts.length - 1] ?? ''
+  const letters = parts.length === 1 ? first.slice(0, 2) : (first[0] ?? '') + (last[0] ?? '')
   return letters.toUpperCase()
 })
 

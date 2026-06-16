@@ -19,9 +19,10 @@ const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences'
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="container mx-auto px-4 py-8 grid gap-8 lg:grid-cols-3">
+    <div class="lg:col-span-2 min-w-0">
     <!-- Profile header -->
-    <div class="mb-8">
+    <div class="mb-8 border-b pb-6">
       <h1 class="text-3xl font-bold">{{ profile.fullName ?? 'Utilisateur' }}</h1>
       <p v-if="profile.title" class="text-lg text-muted-foreground mt-1">{{ profile.title }}</p>
       <p v-if="profile.bio" class="mt-3 max-w-2xl">{{ profile.bio }}</p>
@@ -61,7 +62,7 @@ const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences'
 
     <!-- Experiences tab -->
     <div v-if="activeTab === 'experiences'">
-      <div v-if="experiences.length === 0" class="text-muted-foreground">Aucune expérience.</div>
+      <div v-if="experiences.length === 0" class="text-sm text-muted-foreground rounded-md border border-dashed p-6 text-center">Aucune expérience renseignée.</div>
       <div v-for="exp in experiences" :key="exp.slug" class="border rounded-lg p-4 mb-3">
         <div class="flex items-start justify-between">
           <div>
@@ -83,7 +84,7 @@ const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences'
 
     <!-- Skills tab -->
     <div v-if="activeTab === 'skills'">
-      <div v-if="skills.length === 0" class="text-muted-foreground">Aucune compétence.</div>
+      <div v-if="skills.length === 0" class="text-sm text-muted-foreground rounded-md border border-dashed p-6 text-center">Aucune compétence renseignée.</div>
       <div class="flex flex-wrap gap-2">
         <span
           v-for="skill in skills"
@@ -98,7 +99,7 @@ const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences'
 
     <!-- Certifications tab -->
     <div v-if="activeTab === 'certifications'">
-      <div v-if="certifications.length === 0" class="text-muted-foreground">Aucune certification.</div>
+      <div v-if="certifications.length === 0" class="text-sm text-muted-foreground rounded-md border border-dashed p-6 text-center">Aucune certification renseignée.</div>
       <div v-for="cert in certifications" :key="cert.slug" class="border rounded-lg p-4 mb-3">
         <div class="flex items-start justify-between">
           <div>
@@ -112,5 +113,12 @@ const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences'
         </div>
       </div>
     </div>
+    </div>
+
+    <aside class="lg:col-span-1">
+      <div class="lg:sticky lg:top-8">
+        <ProfileChatPanel :user-id="id" :name="profile.fullName" />
+      </div>
+    </aside>
   </div>
 </template>

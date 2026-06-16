@@ -55,34 +55,39 @@ async function handleDomainCreated() {
 </script>
 
 <template>
-  <div class="p-8 max-w-3xl space-y-6">
+  <div class="p-8 max-w-5xl space-y-6">
     <h1 class="text-2xl font-bold mb-2">Compétences</h1>
 
     <!-- Grouped by domain -->
-    <div v-for="(domainSkills, domainName) in grouped" :key="domainName" class="space-y-1">
-      <div class="flex items-center gap-2 mb-2">
+    <div v-for="(domainSkills, domainName) in grouped" :key="domainName" class="space-y-2">
+      <div class="flex items-center gap-2">
         <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{{ domainName }}</h2>
-        <span class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5">{{ domainSkills.length }}</span>
+        <span class="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">{{ domainSkills.length }}</span>
       </div>
 
-      <template v-for="skill in domainSkills" :key="skill.slug">
-        <!-- Inline edit form -->
-        <div v-if="editingSlug === skill.slug" class="border border-primary/40 rounded-xl p-4 bg-accent/10">
-          <SkillsSkillForm
-            :initial="skill"
-            :domains="domains ?? []"
-            @submit="(d) => handleUpdate(skill.slug, d)"
-            @cancel="editingSlug = null"
-            @domain-created="handleDomainCreated"
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <template v-for="skill in domainSkills" :key="skill.slug">
+          <!-- Inline edit form spans the full row -->
+          <div
+            v-if="editingSlug === skill.slug"
+            class="rounded-xl border border-primary/40 bg-accent/10 p-4 sm:col-span-2 lg:col-span-3"
+          >
+            <SkillsSkillForm
+              :initial="skill"
+              :domains="domains ?? []"
+              @submit="(d) => handleUpdate(skill.slug, d)"
+              @cancel="editingSlug = null"
+              @domain-created="handleDomainCreated"
+            />
+          </div>
+          <SkillsSkillRow
+            v-else
+            :skill="skill"
+            @edit="startEdit(skill.slug)"
+            @delete="handleDelete(skill.slug)"
           />
-        </div>
-        <SkillsSkillRow
-          v-else
-          :skill="skill"
-          @edit="startEdit(skill.slug)"
-          @delete="handleDelete(skill.slug)"
-        />
-      </template>
+        </template>
+      </div>
     </div>
 
     <p v-if="!skills?.length && !isCreating" class="text-sm text-muted-foreground text-center py-4">

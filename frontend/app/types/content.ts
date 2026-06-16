@@ -1,6 +1,8 @@
 export interface SkillEntry {
   name: string
   level: 1 | 2 | 3 | 4 | 5
+  domainId?: number
+  domain?: string
 }
 
 export interface Domain {

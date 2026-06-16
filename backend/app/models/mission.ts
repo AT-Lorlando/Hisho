@@ -7,6 +7,7 @@ import User from '#models/user'
 export interface SkillEntry {
   name: string
   level: 1 | 2 | 3 | 4 | 5
+  domain?: string
 }
 
 export default class Mission extends BaseModel {

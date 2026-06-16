@@ -81,6 +81,7 @@ const EXTRACT_SYSTEM_PROMPT = `À partir du texte fourni, extrais les informatio
 Règles :
 - level est un entier de 1 (débutant) à 5 (expert) — note honnêtement selon le contexte.
 - Les expériences professionnelles (CDI, CDD, freelance, alternance, stage) vont dans "experiences".
+- Identifie systématiquement l'ENTREPRISE / employeur de chaque expérience et mets son nom dans "client" ; mets le poste dans "role". Les en-têtes sont souvent au format « Entreprise — Poste » (ex. « Viveris — Lead Développeur ») : extrais l'entreprise même lorsque le titre ne la contient pas.
 - Les projets personnels (side projects, projets perso, open source…) vont dans "missions" (sans expérience parente).
 - Pour "domains", choisis exclusivement parmi : ${DOMAINS_LIST.join(', ')}. N'invente aucun autre domaine.
 - "skills" est libre (technologies, outils, langages, frameworks), mais reste focus sur le nom de la technologie/du soft.

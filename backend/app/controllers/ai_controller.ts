@@ -19,8 +19,19 @@ function normalizeEntry(entry: unknown): { name: string; level: number } {
   return { name: String(entry), level: 3 }
 }
 
+/** Normalize a skill entry: accepts string, {name}, {name, level}, or {name, level, domain} */
+function normalizeSkillEntry(entry: unknown): { name: string; level: number; domain: string | null } {
+  if (typeof entry === 'string') return { name: entry, level: 3, domain: null }
+  if (entry && typeof entry === 'object') {
+    const e = entry as Record<string, unknown>
+    const domain = e.domain == null || e.domain === '' ? null : String(e.domain)
+    return { name: String(e.name ?? ''), level: Number(e.level ?? 3), domain }
+  }
+  return { name: String(entry), level: 3, domain: null }
+}
+
 function normalizeMission(m: Record<string, unknown>) {
-  if (Array.isArray(m.skills)) m.skills = m.skills.map(normalizeEntry)
+  if (Array.isArray(m.skills)) m.skills = m.skills.map(normalizeSkillEntry)
   if (Array.isArray(m.domains)) m.domains = m.domains.map(normalizeEntry)
 }
 
@@ -33,6 +44,14 @@ function normalizeImportBody(body: Record<string, unknown>) {
   for (const mission of (body.missions as Record<string, unknown>[] | undefined) ?? []) {
     normalizeMission(mission)
   }
+}
+
+/** Find or create a domain by name for a user, returning its id (null if no name). */
+async function resolveOrCreateDomainId(name: string | null | undefined, userId: number): Promise<number | null> {
+  if (!name) return null
+  const slug = generateSlug(name)
+  const domain = await Domain.updateOrCreate({ slug, userId }, { title: name, userId })
+  return domain.id
 }
 
 export default class AiController {
@@ -211,20 +230,23 @@ export default class AiController {
       for (const s of m.skills ?? []) {
         try {
           const slug = generateSlug(s.name)
+          const skillDomainId = s.domain
+            ? await resolveOrCreateDomainId(s.domain, userId)
+            : singleDomainId
           const existing = await Skill.query().where('userId', userId).where('slug', slug).first()
           if (!existing) {
             await Skill.create({
               slug,
               userId,
               title: s.name,
-              domainId: singleDomainId,
+              domainId: skillDomainId,
               level: s.level ?? null,
             })
             if (!created.includes(`skill:${slug}`)) created.push(`skill:${slug}`)
           } else {
             let changed = false
-            if (existing.domainId === null && singleDomainId !== null) {
-              existing.domainId = singleDomainId
+            if (existing.domainId === null && skillDomainId !== null) {
+              existing.domainId = skillDomainId
               changed = true
             }
             if (s.level != null && (existing.level === null || s.level > existing.level)) {

@@ -1,13 +1,16 @@
 <!-- frontend/app/pages/users/[id].vue -->
 <script setup lang="ts">
+import type { Mission } from '~/types/content'
+
 definePageMeta({ auth: false })
 
 const route = useRoute()
 const id = route.params.id as string
 
-const [profile, experiences, skills, certifications] = await Promise.all([
+const [profile, experiences, missions, skills, certifications] = await Promise.all([
   $fetch<any>(`/api/v1/users/${id}/profile`).catch(() => null),
   $fetch<any[]>(`/api/v1/users/${id}/experiences`).catch(() => []),
+  $fetch<Mission[]>(`/api/v1/users/${id}/missions`).catch(() => []),
   $fetch<any[]>(`/api/v1/users/${id}/skills`).catch(() => []),
   $fetch<any[]>(`/api/v1/users/${id}/certifications`).catch(() => []),
 ])
@@ -16,13 +19,38 @@ if (!profile) {
   throw createError({ statusCode: 404, statusMessage: 'Utilisateur introuvable' })
 }
 
-const activeTab = ref<'experiences' | 'skills' | 'certifications'>('experiences')
+const persoMissions = computed(() => missions.filter((m) => m.type === 'perso'))
 
-const tabs = [
+const missionsByExp = computed(() => {
+  const map: Record<string, Mission[]> = {}
+  for (const m of missions) {
+    if (m.experience) {
+      const key = m.experience as string
+      if (!map[key]) map[key] = []
+      map[key]!.push(m)
+    }
+  }
+  return map
+})
+
+const skillsByDomain = computed(() => {
+  const map: Record<string, any[]> = {}
+  for (const s of skills) {
+    const key = s.domain?.title ?? 'Sans domaine'
+    if (!map[key]) map[key] = []
+    map[key].push(s)
+  }
+  return map
+})
+
+const activeTab = ref<'experiences' | 'projects' | 'skills' | 'certifications'>('experiences')
+
+const tabs = computed(() => [
   { key: 'experiences' as const, label: 'Expériences', count: experiences.length },
+  { key: 'projects' as const, label: 'Projets perso', count: persoMissions.value.length },
   { key: 'skills' as const, label: 'Compétences', count: skills.length },
   { key: 'certifications' as const, label: 'Certifications', count: certifications.length },
-]
+])
 
 const links = computed(() =>
   [
@@ -64,15 +92,19 @@ function scrollToChat() {
           </Button>
         </div>
 
-        <!-- Mobile-only: jump to chat -->
         <Button class="mt-5 w-full lg:hidden" @click="scrollToChat">
           <Icon name="lucide:message-circle" class="h-4 w-4" />
           Poser une question sur ce profil
         </Button>
       </div>
 
-      <!-- Tabs (segmented control) -->
-      <div class="mb-6 inline-flex rounded-lg bg-muted p-1 text-sm">
+      <!-- Timeline overview -->
+      <div v-if="experiences.length" class="mb-8">
+        <ExperiencesExperienceTimeline :experiences="experiences" :missions-by-exp="missionsByExp" />
+      </div>
+
+      <!-- Tabs -->
+      <div class="mb-6 inline-flex flex-wrap rounded-lg bg-muted p-1 text-sm">
         <button
           v-for="tab in tabs"
           :key="tab.key"
@@ -84,8 +116,8 @@ function scrollToChat() {
         </button>
       </div>
 
-      <!-- Experiences -->
-      <div v-if="activeTab === 'experiences'" class="space-y-3">
+      <!-- Experiences (with their missions) -->
+      <div v-if="activeTab === 'experiences'" class="space-y-4">
         <div v-if="experiences.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
           Aucune expérience renseignée.
         </div>
@@ -94,7 +126,9 @@ function scrollToChat() {
             <div class="min-w-0">
               <h3 class="font-semibold">{{ exp.title }}</h3>
               <p v-if="exp.role" class="text-sm text-muted-foreground">{{ exp.role }}</p>
-              <p v-if="exp.client" class="text-sm text-muted-foreground">{{ exp.client }}</p>
+              <p v-if="exp.client" class="flex items-center gap-1 text-sm text-muted-foreground">
+                <Icon name="lucide:building" class="h-3 w-3" />{{ exp.client }}
+              </p>
             </div>
             <div class="shrink-0 text-right text-xs text-muted-foreground">
               <span v-if="exp.startDate">{{ exp.startDate }}</span>
@@ -103,25 +137,43 @@ function scrollToChat() {
               <span v-else-if="exp.startDate"> → présent</span>
             </div>
           </div>
-          <p v-if="exp.body" class="mt-2 line-clamp-3 text-sm">{{ exp.body }}</p>
-          <p class="mt-2 text-xs text-muted-foreground">{{ exp.missionCount }} mission(s)</p>
+          <p v-if="exp.body" class="mt-2 text-sm">{{ exp.body }}</p>
+          <div v-if="(missionsByExp[exp.slug] ?? []).length" class="mt-4 space-y-3">
+            <MissionsMissionDetailCard
+              v-for="m in missionsByExp[exp.slug]"
+              :key="m.slug"
+              :mission="m"
+              readonly
+            />
+          </div>
         </div>
       </div>
 
-      <!-- Skills -->
-      <div v-if="activeTab === 'skills'">
+      <!-- Personal projects -->
+      <div v-if="activeTab === 'projects'" class="space-y-3">
+        <div v-if="persoMissions.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+          Aucun projet personnel.
+        </div>
+        <MissionsMissionDetailCard v-for="m in persoMissions" :key="m.slug" :mission="m" readonly />
+      </div>
+
+      <!-- Skills grouped by domain -->
+      <div v-if="activeTab === 'skills'" class="space-y-6">
         <div v-if="skills.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
           Aucune compétence renseignée.
         </div>
-        <div v-else class="flex flex-wrap gap-2">
-          <span
-            v-for="skill in skills"
-            :key="skill.slug"
-            class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm"
-          >
-            {{ skill.title }}
-            <span v-if="skill.level" class="text-xs font-medium text-primary">{{ skill.level }}/5</span>
-          </span>
+        <div v-for="(domainSkills, domainName) in skillsByDomain" :key="domainName">
+          <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{{ domainName }}</h3>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="skill in domainSkills"
+              :key="skill.slug"
+              class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm"
+            >
+              {{ skill.title }}
+              <span v-if="skill.level" class="text-xs font-medium text-primary">{{ skill.level }}/5</span>
+            </span>
+          </div>
         </div>
       </div>
 

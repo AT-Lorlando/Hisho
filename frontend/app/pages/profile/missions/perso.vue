@@ -51,7 +51,7 @@ async function handleDelete(slug: string) {
           @cancel="editingSlug = null"
         />
       </div>
-      <MissionsMissionCard
+      <MissionsMissionDetailCard
         v-else
         :mission="mission"
         @edit="() => { isCreating = false; editingSlug = mission.slug }"

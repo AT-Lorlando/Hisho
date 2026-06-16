@@ -116,7 +116,7 @@ const TYPE_LABELS: Record<string, string> = {
             </div>
 
         <!-- Mission display -->
-        <ExperiencesMissionItem
+        <MissionsMissionDetailCard
           v-else
           :mission="m"
           @edit="startEditMission(m.slug)"

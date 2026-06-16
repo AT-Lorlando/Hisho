@@ -1,6 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { updateProfileValidator } from '#validators/profile'
 import User from '#models/user'
+import db from '@adonisjs/lucid/services/db'
+import Experience from '#models/experience'
+import Mission from '#models/mission'
+import Skill from '#models/skill'
+import Domain from '#models/domain'
+import Certification from '#models/certification'
+import CompetencyRating from '#models/competency_rating'
 
 export default class ProfileController {
   private serializeUser(user: User) {
@@ -43,5 +50,31 @@ export default class ProfileController {
     auth.getUserOrFail()
     // TODO Phase 2: pass user context to AI compilation
     return response.ok({ compiled: 0, total: 0, message: 'Compilation IA disponible en Phase 2' })
+  }
+
+  async cleanContent({ auth, response }: HttpContext) {
+    const userId = auth.getUserOrFail().id
+
+    const deleted = await db.transaction(async (trx) => {
+      // Delete in FK-safe order: missions before experiences, skills before domains.
+      // `model` is a Lucid model class; typed `any` to avoid union-of-static-types friction.
+      const purge = async (model: any): Promise<number> => {
+        const rows = await model.query({ client: trx }).where('userId', userId)
+        const count = rows.length
+        if (count > 0) await model.query({ client: trx }).where('userId', userId).delete()
+        return count
+      }
+
+      const missions = await purge(Mission)
+      const experiences = await purge(Experience)
+      const skills = await purge(Skill)
+      const domains = await purge(Domain)
+      const certifications = await purge(Certification)
+      const competencyRatings = await purge(CompetencyRating)
+
+      return { experiences, missions, skills, domains, certifications, competencyRatings }
+    })
+
+    return response.ok({ deleted })
   }
 }

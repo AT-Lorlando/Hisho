@@ -30,6 +30,7 @@ router
     router.get('/profile', [ProfileController, 'show'])
     router.put('/profile', [ProfileController, 'update'])
     router.post('/profile/compile', [ProfileController, 'compile'])
+    router.delete('/profile/content', [ProfileController, 'cleanContent'])
   })
   .use(middleware.auth())
 

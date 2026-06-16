@@ -195,6 +195,15 @@ export class AiService {
     }
   }
 
+  async chat(
+    systemPrompt: string,
+    messages: { role: 'user' | 'assistant'; content: string }[],
+    onChunk?: (delta: string, isThinking: boolean) => void
+  ): Promise<string> {
+    const all = [{ role: 'system', content: systemPrompt }, ...messages]
+    return this.callCompletions(all, 120_000, 2048, onChunk)
+  }
+
   async extract(profileText: string, onChunk?: (delta: string, isThinking: boolean) => void): Promise<ExtractedProfile> {
     const messages = [
       { role: 'system', content: EXTRACT_SYSTEM_PROMPT },

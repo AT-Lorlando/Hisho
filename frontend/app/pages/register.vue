@@ -1,6 +1,6 @@
+<!-- frontend/app/pages/register.vue -->
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-definePageMeta({ middleware: 'guest' })
 
 const { register, isLoading } = useAuth()
 const email = ref('')
@@ -20,10 +20,10 @@ async function handleRegister() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-background">
+  <div class="flex flex-col items-center justify-center px-4 py-16">
     <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold tracking-tight">Hisho</h1>
-      <p class="text-sm text-muted-foreground mt-1">Votre portfolio technique, augmenté par l'IA</p>
+      <h1 class="text-3xl font-bold tracking-tight">Crée ton profil</h1>
+      <p class="mt-1 text-sm text-muted-foreground">Construis ton portfolio, augmenté par l'IA.</p>
     </div>
     <Card class="w-full max-w-sm">
       <CardHeader>

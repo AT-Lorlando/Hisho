@@ -1,6 +1,5 @@
+<!-- frontend/app/pages/login.vue -->
 <script setup lang="ts">
-definePageMeta({ middleware: 'guest' })
-
 const { login, isLoading } = useAuth()
 const email = ref('')
 const password = ref('')
@@ -14,10 +13,10 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-background">
+  <div class="flex flex-col items-center justify-center px-4 py-16">
     <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold tracking-tight">Hisho</h1>
-      <p class="text-sm text-muted-foreground mt-1">Votre portfolio technique, augmenté par l'IA</p>
+      <h1 class="text-3xl font-bold tracking-tight">Bon retour 👋</h1>
+      <p class="mt-1 text-sm text-muted-foreground">Connecte-toi pour gérer ton portfolio.</p>
     </div>
     <Card class="w-full max-w-sm">
       <CardHeader>

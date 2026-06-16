@@ -33,23 +33,26 @@ function onEnter(e: KeyboardEvent) {
 </script>
 
 <template>
-  <Card class="flex flex-col h-[70vh] max-h-[600px]">
-    <CardHeader class="border-b py-3">
+  <Card class="flex h-[70vh] max-h-[620px] flex-col overflow-hidden">
+    <CardHeader class="border-b bg-muted/30 py-3">
       <CardTitle class="flex items-center gap-2 text-base">
-        <Icon name="lucide:message-circle" class="w-4 h-4 text-primary" />
-        Poser une question sur ce profil
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+          <Icon name="lucide:sparkles" class="h-4 w-4 text-primary" />
+        </span>
+        Discuter avec l'IA
       </CardTitle>
-      <p class="text-xs text-muted-foreground">Réponses factuelles, basées uniquement sur ce profil.</p>
+      <p class="text-xs text-muted-foreground">
+        Réponses factuelles, basées uniquement sur ce profil.
+      </p>
     </CardHeader>
 
-    <div ref="scrollEl" class="flex-1 overflow-y-auto p-4 space-y-3">
-      <!-- Empty state with suggestions -->
+    <div ref="scrollEl" class="flex-1 space-y-3 overflow-y-auto p-4">
       <div v-if="messages.length === 0" class="space-y-2">
         <p class="text-sm text-muted-foreground">Suggestions :</p>
         <button
           v-for="s in suggestions"
           :key="s"
-          class="block w-full text-left text-sm rounded-md border border-border px-3 py-2 hover:bg-muted transition-colors"
+          class="block w-full rounded-lg border border-border px-3 py-2 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
           :disabled="isStreaming || rateLimited"
           @click="ask(s)"
         >
@@ -57,7 +60,6 @@ function onEnter(e: KeyboardEvent) {
         </button>
       </div>
 
-      <!-- Conversation -->
       <div
         v-for="(m, i) in messages"
         :key="i"
@@ -65,19 +67,22 @@ function onEnter(e: KeyboardEvent) {
         :class="m.role === 'user' ? 'justify-end' : 'justify-start'"
       >
         <div
-          class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words"
+          class="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm"
           :class="m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'"
         >
-          {{ m.content }}<span v-if="isStreaming && i === messages.length - 1 && m.role === 'assistant'" class="animate-pulse">▍</span>
+          {{ m.content }}<span
+            v-if="isStreaming && i === messages.length - 1 && m.role === 'assistant'"
+            class="animate-pulse"
+          >▍</span>
         </div>
       </div>
 
-      <div v-if="error" class="rounded-md bg-destructive/10 text-destructive text-sm p-3">
+      <div v-if="error" class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
         {{ error }}
       </div>
     </div>
 
-    <div class="border-t p-3 flex items-end gap-2">
+    <div class="flex items-end gap-2 border-t p-3">
       <textarea
         v-model="input"
         rows="1"
@@ -87,7 +92,11 @@ function onEnter(e: KeyboardEvent) {
         @keydown="onEnter"
       />
       <Button size="icon" :disabled="!input.trim() || isStreaming || rateLimited" @click="send">
-        <Icon :name="isStreaming ? 'lucide:loader-circle' : 'lucide:send'" class="w-4 h-4" :class="{ 'animate-spin': isStreaming }" />
+        <Icon
+          :name="isStreaming ? 'lucide:loader-circle' : 'lucide:send'"
+          class="h-4 w-4"
+          :class="{ 'animate-spin': isStreaming }"
+        />
       </Button>
     </div>
   </Card>

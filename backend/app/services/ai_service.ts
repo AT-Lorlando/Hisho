@@ -85,6 +85,8 @@ Règles :
 - Pour "domains", choisis exclusivement parmi : ${DOMAINS_LIST.join(', ')}. N'invente aucun autre domaine.
 - "skills" est libre (technologies, outils, langages, frameworks), mais reste focus sur le nom de la technologie/du soft.
 - N'inclus PAS de localisation — l'utilisateur la renseignera manuellement.
+- N'attache à une mission que les skills RÉELLEMENT mis en œuvre dans cette mission précise — pas les outils simplement liés au domaine.
+- Pour une mission de type conférence, talk, présentation, enseignement ou formation : décris le sujet dans "body" et ne liste PAS d'outils techniques génériques comme skills, sauf s'ils sont explicitement l'objet de l'intervention.
 - Ne génère que les entrées dont tu es certain. Si une info est absente, utilise null.
 - Retourne uniquement le JSON, rien d'autre.`
 

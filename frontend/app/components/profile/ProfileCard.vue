@@ -13,7 +13,7 @@ defineProps<{
 <template>
   <NuxtLink
     :to="`/users/${user.id}`"
-    class="group block rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+    class="group block border border-border border-l-2 border-l-transparent bg-card p-5 transition-colors hover:border-l-primary hover:bg-accent/30"
   >
     <div class="flex items-center gap-3">
       <UserAvatar :name="user.fullName" size="md" />

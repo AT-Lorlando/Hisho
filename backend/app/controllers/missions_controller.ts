@@ -3,6 +3,7 @@ import Mission, { type SkillEntry } from '#models/mission'
 import Experience from '#models/experience'
 import { createMissionValidator, updateMissionValidator } from '#validators/missions'
 import { generateSlug } from '../utils/slug.js'
+import { syncSkillsAndDomains } from '#services/skill_sync'
 
 function serializeMission(mission: Mission) {
   const data = mission.serialize() as Record<string, any>
@@ -74,15 +75,27 @@ export default class MissionsController {
 
     const derivedType = experienceId ? 'pro' : 'perso'
 
+    const skillsInput = (skills ?? []) as SkillEntry[]
+    const derivedDomains = [...new Set(skillsInput.map((s) => s.domain).filter((d): d is string => !!d))].map(
+      (name) => ({ name, level: 1 as const })
+    )
+    const finalDomains = derivedDomains.length > 0 ? derivedDomains : ((domains ?? []) as SkillEntry[])
+
     await Mission.create({
       ...rest,
       slug,
       userId,
       type: derivedType,
       experienceId,
-      domains: (domains ?? []) as SkillEntry[],
-      skills: (skills ?? []) as SkillEntry[],
+      domains: finalDomains,
+      skills: skillsInput,
     })
+
+    await syncSkillsAndDomains(
+      userId,
+      skillsInput.map((s) => ({ name: s.name, level: s.level, domain: s.domain }))
+    )
+
     return response.created({ slug })
   }
 
@@ -108,14 +121,26 @@ export default class MissionsController {
       experienceId = exp.id
     }
 
+    const skillsInput = (skills ?? []) as SkillEntry[]
+    const derivedDomains = [...new Set(skillsInput.map((s) => s.domain).filter((d): d is string => !!d))].map(
+      (name) => ({ name, level: 1 as const })
+    )
+    const finalDomains = derivedDomains.length > 0 ? derivedDomains : ((domains ?? []) as SkillEntry[])
+
     mission.merge({
       ...rest,
       type: experienceId ? 'pro' : 'perso',
       experienceId,
-      domains: (domains ?? []) as SkillEntry[],
-      skills: (skills ?? []) as SkillEntry[],
+      domains: finalDomains,
+      skills: skillsInput,
     })
     await mission.save()
+
+    await syncSkillsAndDomains(
+      userId,
+      skillsInput.map((s) => ({ name: s.name, level: s.level, domain: s.domain }))
+    )
+
     return response.ok({ slug: mission.slug })
   }
 

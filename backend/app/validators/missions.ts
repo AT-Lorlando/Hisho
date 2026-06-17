@@ -5,6 +5,12 @@ const skillEntryRule = vine.object({
   level: vine.number().withoutDecimals().min(1).max(5),
 })
 
+const missionSkillRule = vine.object({
+  name: vine.string().trim().minLength(1),
+  level: vine.number().withoutDecimals().min(1).max(5),
+  domain: vine.string().trim().nullable().optional(),
+})
+
 export const createMissionValidator = vine.compile(
   vine.object({
     title: vine.string().trim().minLength(1),
@@ -12,7 +18,7 @@ export const createMissionValidator = vine.compile(
     experience: vine.string().trim().optional(),
     client: vine.string().trim().optional(),
     domains: vine.array(skillEntryRule).optional(),
-    skills: vine.array(skillEntryRule).optional(),
+    skills: vine.array(missionSkillRule).optional(),
     startDate: vine.string().trim().optional(),
     endDate: vine.string().trim().optional(),
     body: vine.string().optional(),
@@ -26,7 +32,7 @@ export const updateMissionValidator = vine.compile(
     experience: vine.string().trim().optional(),
     client: vine.string().trim().optional(),
     domains: vine.array(skillEntryRule).optional(),
-    skills: vine.array(skillEntryRule).optional(),
+    skills: vine.array(missionSkillRule).optional(),
     startDate: vine.string().trim().optional(),
     endDate: vine.string().trim().optional(),
     body: vine.string().optional(),

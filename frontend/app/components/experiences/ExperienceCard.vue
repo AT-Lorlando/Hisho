@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Divide } from 'lucide-vue-next';
 import type { Experience, Mission, MissionPayload } from '~/types/content'
 
-const props = defineProps<{
+defineProps<{
   experience: Experience
   missions: Mission[]
 }>()
@@ -54,7 +53,7 @@ const TYPE_LABELS: Record<string, string> = {
 </script>
 
 <template>
-  <div class="border border-border rounded-xl p-5 bg-card hover:border-border/80 transition-colors">
+  <div class="border border-border bg-card p-5 transition-colors hover:border-primary">
     <!-- Experience header -->
     <div class="flex items-start justify-between gap-3 mb-1">
       <div class="min-w-0 flex-1">
@@ -62,7 +61,7 @@ const TYPE_LABELS: Record<string, string> = {
           <h2 class="font-semibold text-base leading-tight">{{ experience.title }}</h2>
           <span
             v-if="experience.type"
-            class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5 font-medium shrink-0"
+            class="shrink-0 border border-border px-1.5 py-0.5 text-xs font-medium tracking-wide text-muted-foreground uppercase"
           >{{ TYPE_LABELS[experience.type] ?? experience.type }}</span>
         </div>
         <p v-if="experience.role" class="text-sm text-muted-foreground mt-0.5">{{ experience.role }}</p>

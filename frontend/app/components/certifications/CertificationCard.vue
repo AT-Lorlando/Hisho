@@ -27,18 +27,18 @@ const status = computed(() => expiryStatus(props.cert.expiry))
 </script>
 
 <template>
-  <div class="group border border-border rounded-xl p-5 bg-card hover:border-border/80 transition-colors">
+  <div class="group border border-border bg-card p-5 transition-colors hover:border-primary">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
           <p class="font-semibold text-base leading-tight">{{ cert.title }}</p>
           <span
             v-if="status === 'expired'"
-            class="text-xs bg-destructive/10 text-destructive rounded px-1.5 py-0.5 font-medium shrink-0"
+            class="shrink-0 border border-destructive px-1.5 py-0.5 text-xs font-medium text-destructive"
           >Expiré</span>
           <span
             v-else-if="status === 'soon'"
-            class="text-xs bg-orange-500/10 text-orange-500 rounded px-1.5 py-0.5 font-medium shrink-0"
+            class="shrink-0 border border-primary px-1.5 py-0.5 text-xs font-medium text-primary"
           >Bientôt</span>
         </div>
         <p class="text-sm text-muted-foreground mt-0.5">{{ cert.organism }}</p>
@@ -50,7 +50,7 @@ const status = computed(() => expiryStatus(props.cert.expiry))
           <span
             v-for="tag in cert.tags"
             :key="tag"
-            class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5"
+            class="border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
           >{{ tag }}</span>
         </div>
       </div>

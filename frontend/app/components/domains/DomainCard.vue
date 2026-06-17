@@ -6,7 +6,7 @@ const emit = defineEmits<{ edit: []; delete: [] }>()
 </script>
 
 <template>
-  <div class="group border border-border rounded-xl p-4 bg-card hover:border-border/80 transition-colors flex items-start justify-between gap-3">
+  <div class="group flex items-start justify-between gap-3 border border-border bg-card p-4 transition-colors hover:border-primary">
     <div class="min-w-0 flex-1">
       <p class="font-semibold text-sm leading-tight">{{ domain.title }}</p>
       <p v-if="domain.description" class="text-xs text-muted-foreground mt-0.5">{{ domain.description }}</p>

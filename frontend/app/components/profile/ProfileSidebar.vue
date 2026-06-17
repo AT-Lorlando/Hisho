@@ -46,7 +46,7 @@ function isActive(path: string) {
         </span>
         <span
           v-if="section.key && counts && counts[section.key as keyof typeof counts] > 0"
-          class="text-xs bg-primary/10 text-primary rounded px-1.5 py-0.5"
+          class="border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
         >
           {{ counts[section.key as keyof typeof counts] }}
         </span>

@@ -7,7 +7,7 @@ const emit = defineEmits<{ edit: []; delete: [] }>()
 </script>
 
 <template>
-  <div class="group relative rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40">
+  <div class="group relative border border-border bg-card p-4 transition-colors hover:border-primary">
     <div class="flex items-start justify-between gap-2">
       <span class="min-w-0 truncate font-medium">{{ skill.title }}</span>
       <div class="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">

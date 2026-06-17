@@ -14,11 +14,11 @@ const { data: users, error } = await useFetch<
       <p class="mt-1 text-muted-foreground">Choisis un portfolio et discute avec l'IA à son sujet.</p>
     </header>
 
-    <div v-if="error" class="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+    <div v-if="error" class="border-t border-border p-8 text-center text-sm text-muted-foreground italic">
       Impossible de charger la liste des profils.
     </div>
 
-    <div v-else-if="!users || users.length === 0" class="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+    <div v-else-if="!users || users.length === 0" class="border-t border-border p-8 text-center text-sm text-muted-foreground italic">
       Aucun profil pour l'instant.
       <NuxtLink to="/register" class="text-primary hover:underline">Crée le premier</NuxtLink>.
     </div>

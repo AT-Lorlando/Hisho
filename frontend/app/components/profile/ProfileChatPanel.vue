@@ -36,7 +36,7 @@ function onEnter(e: KeyboardEvent) {
   <Card class="flex h-[70vh] max-h-[620px] flex-col overflow-hidden">
     <CardHeader class="border-b bg-muted/30 py-3">
       <CardTitle class="flex items-center gap-2 text-base">
-        <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border">
           <Icon name="lucide:sparkles" class="h-4 w-4 text-primary" />
         </span>
         Discuter avec l'IA
@@ -67,7 +67,7 @@ function onEnter(e: KeyboardEvent) {
         :class="m.role === 'user' ? 'justify-end' : 'justify-start'"
       >
         <div
-          class="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm"
+          class="max-w-[85%] whitespace-pre-wrap break-words rounded px-3 py-2 text-sm"
           :class="m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'"
         >
           {{ m.content }}<span

@@ -38,7 +38,7 @@ async function handleDelete(slug: string) {
     <h1 class="text-2xl font-bold mb-6">Domaines</h1>
 
     <template v-for="domain in domains" :key="domain.slug">
-      <div v-if="editingSlug === domain.slug" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+      <div v-if="editingSlug === domain.slug" class="border border-primary/40 rounded p-5 bg-accent/10">
         <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Modifier le domaine</h2>
         <DomainsDomainForm
           :initial="domain"
@@ -58,14 +58,14 @@ async function handleDelete(slug: string) {
       Aucun domaine encore.
     </p>
 
-    <div v-if="isCreating" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+    <div v-if="isCreating" class="border border-primary/40 rounded p-5 bg-accent/10">
       <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Nouveau domaine</h2>
       <DomainsDomainForm @submit="handleCreate" @cancel="isCreating = false" />
     </div>
 
     <div
       v-if="!isCreating"
-      class="border border-dashed border-border rounded-xl p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/40 hover:text-primary transition-colors"
+      class="border border-border rounded p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer transition-colors hover:border-primary"
       @click="startCreate"
     >
       <Icon name="lucide:plus" class="w-4 h-4" />

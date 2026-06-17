@@ -82,7 +82,7 @@ async function handleMissionDelete(mslug: string) {
     <!-- Experience cards -->
     <template v-for="exp in experiences" :key="exp.slug">
       <!-- Inline edit form -->
-      <div v-if="editingSlug === exp.slug" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+      <div v-if="editingSlug === exp.slug" class="border border-primary/40 rounded p-5 bg-accent/10">
         <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">
           Modifier l'expérience
         </h2>
@@ -115,7 +115,7 @@ async function handleMissionDelete(mslug: string) {
     </p>
 
     <!-- Create form inline -->
-    <div v-if="isCreating" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+    <div v-if="isCreating" class="border border-primary/40 rounded p-5 bg-accent/10">
       <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">
         Nouvelle expérience
       </h2>
@@ -128,7 +128,7 @@ async function handleMissionDelete(mslug: string) {
     <!-- Skeleton "new experience" card -->
     <div
       v-if="!isCreating"
-      class="border border-dashed border-border rounded-xl p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/40 hover:text-primary transition-colors"
+      class="border border-border rounded p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer transition-colors hover:border-primary"
       @click="startCreate"
     >
       <Icon name="lucide:plus" class="w-4 h-4" />

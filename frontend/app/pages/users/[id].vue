@@ -118,10 +118,10 @@ function scrollToChat() {
 
       <!-- Experiences (with their missions) -->
       <div v-if="activeTab === 'experiences'" class="space-y-4">
-        <div v-if="experiences.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <div v-if="experiences.length === 0" class="border-t border-border p-6 text-center text-sm text-muted-foreground italic">
           Aucune expérience renseignée.
         </div>
-        <div v-for="exp in experiences" :key="exp.slug" class="rounded-xl border border-border bg-card p-4">
+        <div v-for="exp in experiences" :key="exp.slug" class="rounded border border-border bg-card p-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h3 class="font-semibold">{{ exp.title }}</h3>
@@ -151,7 +151,7 @@ function scrollToChat() {
 
       <!-- Personal projects -->
       <div v-if="activeTab === 'projects'" class="space-y-3">
-        <div v-if="persoMissions.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <div v-if="persoMissions.length === 0" class="border-t border-border p-6 text-center text-sm text-muted-foreground italic">
           Aucun projet personnel.
         </div>
         <MissionsMissionDetailCard v-for="m in persoMissions" :key="m.slug" :mission="m" readonly />
@@ -159,7 +159,7 @@ function scrollToChat() {
 
       <!-- Skills grouped by domain -->
       <div v-if="activeTab === 'skills'" class="space-y-6">
-        <div v-if="skills.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <div v-if="skills.length === 0" class="border-t border-border p-6 text-center text-sm text-muted-foreground italic">
           Aucune compétence renseignée.
         </div>
         <div v-for="(domainSkills, domainName) in skillsByDomain" :key="domainName">
@@ -168,10 +168,10 @@ function scrollToChat() {
             <span
               v-for="skill in domainSkills"
               :key="skill.slug"
-              class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm"
+              class="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1 text-sm"
             >
               {{ skill.title }}
-              <span v-if="skill.level" class="text-xs font-medium text-primary">{{ skill.level }}/5</span>
+              <span v-if="skill.level" class="text-xs text-muted-foreground">{{ skill.level }}/5</span>
             </span>
           </div>
         </div>
@@ -179,10 +179,10 @@ function scrollToChat() {
 
       <!-- Certifications -->
       <div v-if="activeTab === 'certifications'" class="space-y-3">
-        <div v-if="certifications.length === 0" class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <div v-if="certifications.length === 0" class="border-t border-border p-6 text-center text-sm text-muted-foreground italic">
           Aucune certification renseignée.
         </div>
-        <div v-for="cert in certifications" :key="cert.slug" class="rounded-xl border border-border bg-card p-4">
+        <div v-for="cert in certifications" :key="cert.slug" class="rounded border border-border bg-card p-4">
           <div class="flex items-start justify-between gap-3">
             <div>
               <h3 class="font-semibold">{{ cert.title }}</h3>

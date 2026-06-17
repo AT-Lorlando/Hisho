@@ -43,7 +43,7 @@ async function handleDelete(slug: string) {
     <h1 class="text-2xl font-bold mb-6">Projets perso</h1>
 
     <template v-for="mission in missions" :key="mission.slug">
-      <div v-if="editingSlug === mission.slug" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+      <div v-if="editingSlug === mission.slug" class="border border-primary/40 rounded p-5 bg-accent/10">
         <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Modifier le projet</h2>
         <MissionsMissionForm
           :initial="mission"
@@ -63,14 +63,14 @@ async function handleDelete(slug: string) {
       Aucun projet perso encore.
     </p>
 
-    <div v-if="isCreating" class="border border-primary/40 rounded-xl p-5 bg-accent/10">
+    <div v-if="isCreating" class="border border-primary/40 rounded p-5 bg-accent/10">
       <h2 class="font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wide">Nouveau projet</h2>
       <MissionsMissionForm @submit="handleCreate" @cancel="isCreating = false" />
     </div>
 
     <div
       v-if="!isCreating"
-      class="border border-dashed border-border rounded-xl p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/40 hover:text-primary transition-colors"
+      class="border border-border rounded p-5 flex items-center justify-center gap-2 text-sm text-muted-foreground cursor-pointer transition-colors hover:border-primary"
       @click="startCreate"
     >
       <Icon name="lucide:plus" class="w-4 h-4" />

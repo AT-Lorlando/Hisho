@@ -138,7 +138,7 @@ async function handleDeleteAccount() {
     </form>
 
     <!-- Reset content -->
-    <div class="mt-12 space-y-4 rounded-xl border border-amber-500/40 p-6">
+    <div class="mt-12 space-y-4 rounded border border-amber-500/40 p-6">
       <h2 class="text-base font-semibold text-amber-600">Réinitialiser le contenu</h2>
       <p class="text-sm text-muted-foreground">
         Supprime toutes tes expériences, missions, compétences, domaines et certifications.
@@ -157,7 +157,7 @@ async function handleDeleteAccount() {
     </div>
 
     <!-- Danger zone -->
-    <div class="mt-12 border border-destructive/40 rounded-xl p-6 space-y-4">
+    <div class="mt-12 border border-destructive/40 rounded p-6 space-y-4">
       <h2 class="text-base font-semibold text-destructive">Zone dangereuse</h2>
       <p class="text-sm text-muted-foreground">
         Supprime ton compte et toutes les données associées (expériences, missions, compétences, domaines, certifications). Cette action est irréversible.

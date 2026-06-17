@@ -42,7 +42,7 @@ function handleKeydown(e: KeyboardEvent) {
     <span
       v-for="(tag, i) in modelValue"
       :key="`${i}-${tag}`"
-      class="inline-flex items-center gap-1 bg-primary/10 text-primary rounded px-2 py-0.5 text-xs font-medium"
+      class="inline-flex items-center gap-1 border border-border text-foreground rounded px-2 py-0.5 text-xs font-medium"
     >
       {{ tag }}
       <button type="button" class="hover:text-destructive transition-colors leading-none" @click.stop="removeTag(i)">

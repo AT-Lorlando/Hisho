@@ -98,7 +98,7 @@ function missionBarStyle(m: Mission): Record<string, string> {
 </script>
 
 <template>
-  <div v-if="bounds && bounds.max > bounds.min" class="mb-8 rounded-xl border border-border bg-card p-4 overflow-x-auto">
+  <div v-if="bounds && bounds.max > bounds.min" class="mb-8 rounded border border-border bg-card p-4 overflow-x-auto">
     <h2 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Timeline</h2>
 
     <!-- X axis — year labels -->

@@ -5,9 +5,9 @@ import aiService from '#services/ai_service'
 import Experience from '#models/experience'
 import Mission from '#models/mission'
 import Domain from '#models/domain'
-import Skill from '#models/skill'
 import type { SkillEntry } from '#models/mission'
 import { generateSlug } from '../utils/slug.js'
+import { syncSkillsAndDomains } from '#services/skill_sync'
 
 /** Normalize a skill/domain entry: accepts string, {name}, or {name, level} */
 function normalizeEntry(entry: unknown): { name: string; level: number } {
@@ -46,13 +46,6 @@ function normalizeImportBody(body: Record<string, unknown>) {
   }
 }
 
-/** Find or create a domain by name for a user, returning its id (null if no name). */
-async function resolveOrCreateDomainId(name: string | null | undefined, userId: number): Promise<number | null> {
-  if (!name) return null
-  const slug = generateSlug(name)
-  const domain = await Domain.updateOrCreate({ slug, userId }, { title: name, userId })
-  return domain.id
-}
 
 export default class AiController {
   async extract({ request, response }: HttpContext) {
@@ -197,10 +190,8 @@ export default class AiController {
     ]
 
     const domainNames = new Set<string>()
-    const skillNames = new Set<string>()
     for (const m of allMissions) {
       for (const d of m.domains ?? []) domainNames.add(d.name)
-      for (const s of m.skills ?? []) skillNames.add(s.name)
     }
 
     // Upsert domains — scoped to userId
@@ -215,51 +206,18 @@ export default class AiController {
       }
     }
 
-    // Upsert skills — try to assign domainId when there's only one domain on the parent mission
-    for (const m of allMissions) {
-      const singleDomainId =
-        (m.domains ?? []).length === 1
-          ? ((
-              await Domain.query()
-                .where('userId', userId)
-                .where('slug', generateSlug(m.domains![0].name))
-                .first()
-            )?.id ?? null)
-          : null
-
-      for (const s of m.skills ?? []) {
-        try {
-          const slug = generateSlug(s.name)
-          const skillDomainId = s.domain
-            ? await resolveOrCreateDomainId(s.domain, userId)
-            : singleDomainId
-          const existing = await Skill.query().where('userId', userId).where('slug', slug).first()
-          if (!existing) {
-            await Skill.create({
-              slug,
-              userId,
-              title: s.name,
-              domainId: skillDomainId,
-              level: s.level ?? null,
-            })
-            if (!created.includes(`skill:${slug}`)) created.push(`skill:${slug}`)
-          } else {
-            let changed = false
-            if (existing.domainId === null && skillDomainId !== null) {
-              existing.domainId = skillDomainId
-              changed = true
-            }
-            if (s.level != null && (existing.level === null || s.level > existing.level)) {
-              existing.level = s.level
-              changed = true
-            }
-            if (changed) await existing.save()
-          }
-        } catch (e: any) {
-          errors.push(`Skill "${s.name}": ${e.message}`)
-        }
-      }
-    }
+    // Upsert skills into the user's global skills (per-skill domain, with single-domain fallback).
+    const skillsForSync = allMissions.flatMap((m) => {
+      const singleDomainName = (m.domains ?? []).length === 1 ? m.domains![0].name : null
+      return (m.skills ?? []).map((s) => ({
+        name: s.name,
+        level: s.level,
+        domain: s.domain ?? singleDomainName,
+      }))
+    })
+    const sync = await syncSkillsAndDomains(userId, skillsForSync)
+    created.push(...sync.created.filter((c) => !created.includes(c)))
+    errors.push(...sync.errors)
 
     return response.ok({ created, errors })
   }

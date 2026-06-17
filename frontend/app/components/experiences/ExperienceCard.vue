@@ -17,6 +17,7 @@ const emit = defineEmits<{
 
 const isAddingMission = ref(false)
 const editingMissionSlug = ref<string | null>(null)
+const expanded = ref(true)
 
 function startEditMission(slug: string) {
   isAddingMission.value = false
@@ -100,8 +101,17 @@ const TYPE_LABELS: Record<string, string> = {
       </div>
     </div>
 
-    <!-- Missions section -->
-    <div class="mt-3 border-t border-border/40 pt-3 divide-y divide-border">
+    <!-- Missions toggle -->
+    <button
+      type="button"
+      class="mt-3 flex w-full items-center gap-2 border-t border-border/40 pt-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+      @click="expanded = !expanded"
+    >
+      <Icon :name="expanded ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="h-4 w-4" />
+      {{ missions.length }} mission{{ missions.length > 1 ? 's' : '' }}
+    </button>
+
+    <div v-show="expanded" class="mt-3 divide-y divide-border">
       <!-- Mission rows -->
 
          <template v-for="m in missions" :key="m.slug">

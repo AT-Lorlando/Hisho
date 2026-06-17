@@ -41,7 +41,6 @@ const groups = computed(() => {
         <div v-for="g in groups" :key="g.name" class="rounded-xl border border-border/40 bg-background/40 p-3">
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold text-blue-400">{{ g.name }}</span>
-            <span v-if="g.level" class="font-mono text-xs tracking-tight text-amber-400">{{ levelStars(g.level) }}</span>
           </div>
           <div v-if="g.skills.length" class="mt-3 flex flex-wrap gap-2">
             <div

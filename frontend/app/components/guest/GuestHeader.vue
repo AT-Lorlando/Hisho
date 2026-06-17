@@ -4,11 +4,11 @@ const { isAuthenticated, user } = useAuth()
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
+  <header class="sticky top-0 z-40 border-b border-border bg-background">
     <div class="container mx-auto flex h-14 items-center justify-between px-4">
-      <NuxtLink to="/" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+      <NuxtLink to="/" class="flex items-center gap-2 font-serif text-lg font-semibold">
         <span
-          class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-primary/70 text-sm text-primary-foreground"
+          class="inline-flex h-7 w-7 items-center justify-center bg-primary font-serif text-sm text-primary-foreground"
         >秘</span>
         Hisho
       </NuxtLink>

@@ -27,7 +27,7 @@ const sizeClass = computed(
 
 <template>
   <div
-    class="inline-flex shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 font-semibold text-primary-foreground"
+    class="inline-flex shrink-0 select-none items-center justify-center rounded-full bg-primary font-serif font-semibold text-primary-foreground"
     :class="sizeClass"
   >
     <span v-if="initials">{{ initials }}</span>

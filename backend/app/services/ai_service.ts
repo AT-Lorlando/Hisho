@@ -204,7 +204,9 @@ export class AiService {
     onChunk?: (delta: string, isThinking: boolean) => void
   ): Promise<string> {
     const all = [{ role: 'system', content: systemPrompt }, ...messages]
-    return this.callCompletions(all, 120_000, 2048, onChunk)
+    // Generous budget: 2048 tokens truncated long answers mid-sentence; 5 min
+    // timeout matches the extract path so slow LLMs don't get aborted early.
+    return this.callCompletions(all, 300_000, 8192, onChunk)
   }
 
   async extract(profileText: string, onChunk?: (delta: string, isThinking: boolean) => void): Promise<ExtractedProfile> {

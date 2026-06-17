@@ -41,27 +41,32 @@ export function useProfileChat(userId: string | number) {
       const decoder = new TextDecoder()
       let buffer = ''
 
+      const handlePart = (part: string) => {
+        if (!part.startsWith('data: ')) return
+        let data: { type: 'chunk' | 'done' | 'error'; content?: string; isThinking?: boolean; message?: string }
+        try {
+          data = JSON.parse(part.slice(6))
+        } catch {
+          return // ignore an incomplete/malformed SSE fragment
+        }
+        if (data.type === 'chunk' && data.content && !data.isThinking) {
+          assistant.content += data.content
+        } else if (data.type === 'error') {
+          error.value = data.message ?? "L'IA n'a pas pu répondre."
+        }
+      }
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         buffer += decoder.decode(value, { stream: true })
         const parts = buffer.split('\n\n')
         buffer = parts.pop() ?? ''
-        for (const part of parts) {
-          if (!part.startsWith('data: ')) continue
-          const data = JSON.parse(part.slice(6)) as {
-            type: 'chunk' | 'done' | 'error'
-            content?: string
-            isThinking?: boolean
-            message?: string
-          }
-          if (data.type === 'chunk' && data.content && !data.isThinking) {
-            assistant.content += data.content
-          } else if (data.type === 'error') {
-            error.value = data.message ?? "L'IA n'a pas pu répondre."
-          }
-        }
+        for (const part of parts) handlePart(part)
       }
+      // Flush any trailing event still buffered when the stream closed
+      buffer += decoder.decode()
+      for (const part of buffer.split('\n\n')) handlePart(part.trim())
       if (!assistant.content && !error.value) error.value = "L'IA n'a pas répondu."
     } catch (e: any) {
       error.value = e?.message ?? 'Erreur réseau.'

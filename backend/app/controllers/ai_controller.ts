@@ -7,7 +7,7 @@ import Mission from '#models/mission'
 import Domain from '#models/domain'
 import type { SkillEntry } from '#models/mission'
 import { generateSlug } from '../utils/slug.js'
-import { syncSkillsAndDomains } from '#services/skill_sync'
+import { syncSkillsAndDomains, deriveMissionDomains } from '#services/skill_sync'
 
 /** Normalize a skill/domain entry: accepts string, {name}, or {name, level} */
 function normalizeEntry(entry: unknown): { name: string; level: number } {
@@ -132,6 +132,8 @@ export default class AiController {
               errors.push(`Mission "${mission.title}" (slug: ${mSlug}) already exists — skipped`)
               continue
             }
+            const proSkills = (mission.skills ?? []) as SkillEntry[]
+            const proDerived = deriveMissionDomains(proSkills)
             await Mission.create({
               slug: mSlug,
               userId,
@@ -141,8 +143,8 @@ export default class AiController {
               client: mission.client ?? null,
               startDate: mission.startDate ?? null,
               endDate: mission.endDate ?? null,
-              domains: (mission.domains ?? []) as SkillEntry[],
-              skills: (mission.skills ?? []) as SkillEntry[],
+              domains: proDerived.length > 0 ? proDerived : ((mission.domains ?? []) as SkillEntry[]),
+              skills: proSkills,
               body: mission.body ?? null,
             })
             created.push(`mission:${mSlug}`)
@@ -164,6 +166,8 @@ export default class AiController {
           errors.push(`Mission "${mission.title}" (slug: ${mSlug}) already exists — skipped`)
           continue
         }
+        const persoSkills = (mission.skills ?? []) as SkillEntry[]
+        const persoDerived = deriveMissionDomains(persoSkills)
         await Mission.create({
           slug: mSlug,
           userId,
@@ -173,8 +177,8 @@ export default class AiController {
           client: null,
           startDate: mission.startDate ?? null,
           endDate: mission.endDate ?? null,
-          domains: (mission.domains ?? []) as SkillEntry[],
-          skills: (mission.skills ?? []) as SkillEntry[],
+          domains: persoDerived.length > 0 ? persoDerived : ((mission.domains ?? []) as SkillEntry[]),
+          skills: persoSkills,
           body: mission.body ?? null,
         })
         created.push(`mission:${mSlug}`)

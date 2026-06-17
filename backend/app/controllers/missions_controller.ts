@@ -3,7 +3,7 @@ import Mission, { type SkillEntry } from '#models/mission'
 import Experience from '#models/experience'
 import { createMissionValidator, updateMissionValidator } from '#validators/missions'
 import { generateSlug } from '../utils/slug.js'
-import { syncSkillsAndDomains } from '#services/skill_sync'
+import { syncSkillsAndDomains, deriveMissionDomains } from '#services/skill_sync'
 
 function serializeMission(mission: Mission) {
   const data = mission.serialize() as Record<string, any>
@@ -76,9 +76,7 @@ export default class MissionsController {
     const derivedType = experienceId ? 'pro' : 'perso'
 
     const skillsInput = (skills ?? []) as SkillEntry[]
-    const derivedDomains = [...new Set(skillsInput.map((s) => s.domain).filter((d): d is string => !!d))].map(
-      (name) => ({ name, level: 1 as const })
-    )
+    const derivedDomains = deriveMissionDomains(skillsInput)
     const finalDomains = derivedDomains.length > 0 ? derivedDomains : ((domains ?? []) as SkillEntry[])
 
     await Mission.create({
@@ -122,9 +120,7 @@ export default class MissionsController {
     }
 
     const skillsInput = (skills ?? []) as SkillEntry[]
-    const derivedDomains = [...new Set(skillsInput.map((s) => s.domain).filter((d): d is string => !!d))].map(
-      (name) => ({ name, level: 1 as const })
-    )
+    const derivedDomains = deriveMissionDomains(skillsInput)
     const finalDomains = derivedDomains.length > 0 ? derivedDomains : ((domains ?? []) as SkillEntry[])
 
     mission.merge({

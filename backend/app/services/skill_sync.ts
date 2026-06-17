@@ -1,11 +1,23 @@
 import Domain from '#models/domain'
 import Skill from '#models/skill'
+import type { SkillEntry } from '#models/mission'
 import { generateSlug } from '../utils/slug.js'
 
 export interface SyncSkillEntry {
   name: string
   level?: number | null
   domain?: string | null
+}
+
+/**
+ * Derives a mission's `domains` (the JSON column used to group skills in the UI)
+ * from the distinct domains carried by its skills. The level is a neutral 1 —
+ * it is not displayed; only the name is used as a group header.
+ */
+export function deriveMissionDomains(skills: SkillEntry[]): SkillEntry[] {
+  return [...new Set((skills ?? []).map((s) => s.domain).filter((d): d is string => !!d))].map(
+    (name) => ({ name, level: 1 as const })
+  )
 }
 
 /**

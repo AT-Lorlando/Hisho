@@ -74,7 +74,7 @@ function scrollToChat() {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
           <UserAvatar :name="profile.fullName" size="lg" />
           <div class="min-w-0">
-            <h1 class="text-3xl font-bold tracking-tight">{{ profile.fullName ?? 'Utilisateur' }}</h1>
+            <h1 class="text-3xl font-bold">{{ profile.fullName ?? 'Utilisateur' }}</h1>
             <p v-if="profile.title" class="mt-1 text-lg text-muted-foreground">{{ profile.title }}</p>
             <p v-if="profile.location" class="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               <Icon name="lucide:map-pin" class="h-3.5 w-3.5" />{{ profile.location }}

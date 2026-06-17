@@ -115,7 +115,7 @@ const TYPE_LABELS: Record<string, string> = {
 
          <template v-for="m in missions" :key="m.slug">
            <!-- Inline edit form -->
-           <div v-if="editingMissionSlug === m.slug" class="rounded-lg border border-primary/40 p-4 bg-accent/10 mb-2">
+           <div v-if="editingMissionSlug === m.slug" class="rounded border border-primary/40 p-4 bg-accent/10 mb-2">
              <ExperiencesMissionForm
              :initial="m"
              :experience-slug="experience.slug"
@@ -134,7 +134,7 @@ const TYPE_LABELS: Record<string, string> = {
       </template>
 
       <!-- Add mission inline form -->
-      <div v-if="isAddingMission" class="rounded-lg border border-primary/40 p-4 bg-accent/10 mt-2">
+      <div v-if="isAddingMission" class="rounded border border-primary/40 p-4 bg-accent/10 mt-2">
         <ExperiencesMissionForm
           :experience-slug="experience.slug"
           @submit="onMissionCreate"
@@ -145,7 +145,7 @@ const TYPE_LABELS: Record<string, string> = {
       <!-- Add mission skeleton row -->
       <div
         v-if="!isAddingMission"
-        class="flex items-center gap-2 px-1 py-2 rounded-lg text-xs text-muted-foreground cursor-pointer hover:text-primary hover:bg-accent/30 transition-colors mt-1"
+        class="flex items-center gap-2 px-1 py-2 rounded text-xs text-muted-foreground cursor-pointer hover:text-primary hover:bg-accent/30 transition-colors mt-1"
         @click="startAddMission"
       >
         <Icon name="lucide:plus" class="w-3.5 h-3.5" />

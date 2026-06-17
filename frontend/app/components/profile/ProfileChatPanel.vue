@@ -52,7 +52,7 @@ function onEnter(e: KeyboardEvent) {
         <button
           v-for="s in suggestions"
           :key="s"
-          class="block w-full rounded-lg border border-border px-3 py-2 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
+          class="block w-full rounded border border-border px-3 py-2 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
           :disabled="isStreaming || rateLimited"
           @click="ask(s)"
         >

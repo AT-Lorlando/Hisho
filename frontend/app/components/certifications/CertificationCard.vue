@@ -31,7 +31,7 @@ const status = computed(() => expiryStatus(props.cert.expiry))
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <p class="font-semibold text-base leading-tight">{{ cert.title }}</p>
+          <p class="font-serif font-semibold text-base leading-tight">{{ cert.title }}</p>
           <span
             v-if="status === 'expired'"
             class="shrink-0 border border-destructive px-1.5 py-0.5 text-xs font-medium text-destructive"

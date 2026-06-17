@@ -18,7 +18,7 @@ defineProps<{
     <div class="flex items-center gap-3">
       <UserAvatar :name="user.fullName" size="md" />
       <div class="min-w-0">
-        <p class="truncate font-semibold">{{ user.fullName ?? 'Utilisateur' }}</p>
+        <p class="truncate font-serif font-semibold">{{ user.fullName ?? 'Utilisateur' }}</p>
         <p v-if="user.title" class="truncate text-sm text-muted-foreground">{{ user.title }}</p>
       </div>
     </div>

@@ -10,7 +10,7 @@ const { data: users, error } = await useFetch<
 <template>
   <div class="container mx-auto px-4 py-12">
     <header class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">Profils</h1>
+      <h1 class="text-3xl font-bold">Profils</h1>
       <p class="mt-1 text-muted-foreground">Choisis un portfolio et discute avec l'IA à son sujet.</p>
     </header>
 

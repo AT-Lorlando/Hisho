@@ -14,10 +14,25 @@ const loggerConfig = defineConfig({
       enabled: true,
       name: env.get('APP_NAME'),
       level: env.get('LOG_LEVEL'),
+      // Fields added to every line (see the homelab logs convention)
+      base: { app: 'hisho', service: 'backend', env: app.inProduction ? 'prod' : 'dev' },
+      redact: {
+        paths: [
+          'password',
+          '*.password',
+          'token',
+          '*.token',
+          'authorization',
+          '*.authorization',
+          'headers.authorization',
+          'headers.cookie',
+        ],
+        censor: '[redacted]',
+      },
       transport: {
         targets: targets()
           .pushIf(!app.inProduction, targets.pretty())
-          .pushIf(app.inProduction, targets.file({ destination: 1 }))
+          .pushIf(app.inProduction, targets.file({ destination: 1 })) // stdout, raw JSON
           .toArray(),
       },
     },

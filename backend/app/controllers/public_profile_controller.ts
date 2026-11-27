@@ -165,7 +165,7 @@ export default class PublicProfileController {
     })
   }
 
-  async chat({ params, request, response }: HttpContext) {
+  async chat({ params, request, response, logger }: HttpContext) {
     const userId = this.parseUserId(params.id as string)
     if (!userId) return response.notFound({ message: 'User not found' })
     const user = await User.find(userId)
@@ -256,6 +256,7 @@ export default class PublicProfileController {
         })
         send({ type: 'done' })
       } catch (e: any) {
+        logger.error({ event: 'ai.chat.failed', user_id: user.id, err: e }, 'ai chat failed')
         send({ type: 'error', message: e?.message ?? 'AI service error' })
       } finally {
         pass.end()

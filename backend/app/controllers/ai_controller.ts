@@ -48,7 +48,7 @@ function normalizeImportBody(body: Record<string, unknown>) {
 
 
 export default class AiController {
-  async extract({ request, response }: HttpContext) {
+  async extract({ request, response, logger }: HttpContext) {
     const { message } = await request.validateUsing(extractValidator)
 
     const pass = new PassThrough()
@@ -71,12 +71,15 @@ export default class AiController {
         send({ type: 'done', result })
       } catch (e: any) {
         if (e instanceof SyntaxError) {
+          // SyntaxError messages may embed the raw model output (personal data): log the type only
+          logger.error({ event: 'ai.extract.failed', err_type: e.name }, 'ai extract failed')
           send({
             type: 'error',
             message: "L'IA n'a pas pu produire un JSON valide. Télécharge le brut pour le corriger manuellement.",
             rawJson: (e as any).rawCandidate ?? null,
           })
         } else {
+          logger.error({ event: 'ai.extract.failed', err: e }, 'ai extract failed')
           send({ type: 'error', message: e.message ?? 'AI service error' })
         }
       } finally {

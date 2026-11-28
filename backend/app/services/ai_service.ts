@@ -1,4 +1,5 @@
 import env from '#start/env'
+import logger from '@adonisjs/core/services/logger'
 
 export interface ExtractedSkillEntry {
   name: string
@@ -221,8 +222,8 @@ export class AiService {
       onChunk ? (delta, isThinking) => onChunk(delta, isThinking) : undefined
     )
 
-    console.log('[AiService.extract] raw response length:', raw.length)
-    console.log('[AiService.extract] raw response:\n', raw)
+    // Never log the raw response: it echoes the user's personal profile text.
+    logger.debug({ event: 'ai.extract.raw_response', response_length: raw.length }, 'ai extract raw response')
 
     const jsonStart = raw.search(/[{[]/)
     if (jsonStart === -1) {
@@ -242,7 +243,6 @@ export class AiService {
       } catch {}
     }
 
-    console.error('[AiService.extract] all parse attempts failed')
     const err = new SyntaxError('AI returned invalid JSON after all repair attempts.')
     ;(err as any).rawCandidate = repaired
     throw err
